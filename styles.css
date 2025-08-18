@@ -295,6 +295,11 @@ html {
     box-shadow: 0 6px 25px rgba(220, 20, 60, 0.6);
 }
 
+.hero-btn.clicked {
+    transform: scale(0.95);
+    background: linear-gradient(45deg, var(--peach), var(--crimson));
+}
+
 .hero-scroll-indicator {
     position: absolute;
     bottom: 2rem;

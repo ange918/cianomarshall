@@ -107,7 +107,12 @@ function initializeApp() {
 function setupEventListeners() {
     // Navigation
     hamburger.addEventListener('click', toggleMobileMenu);
-    discoverBtn.addEventListener('click', () => scrollToSection('about'));
+    discoverBtn.addEventListener('click', () => {
+        // Add visual feedback for the button click
+        discoverBtn.classList.add('clicked');
+        setTimeout(() => discoverBtn.classList.remove('clicked'), 300);
+        scrollToSection('about');
+    });
     beatsBtn.addEventListener('click', () => scrollToSection('playlist'));
     
     // Cart functionality
