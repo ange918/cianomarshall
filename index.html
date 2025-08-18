@@ -56,20 +56,43 @@
 
     <!-- Hero Section -->
     <section id="home" class="hero">
-        <div class="hero-background">
-            <div class="hero-overlay"></div>
-        </div>
-        <div class="hero-content">
-            <h1 class="hero-title">BeatMaster Pro</h1>
-            <p class="hero-subtitle">Producteur de beats Trap, Afro & Drill</p>
-            <p class="hero-description">Des beats uniques qui transforment vos idées en hits</p>
-            <button class="hero-btn" id="discover-btn">
-                <span>Découvrez-moi</span>
-                <i class="fas fa-arrow-down"></i>
-            </button>
-        </div>
-        <div class="hero-scroll-indicator">
-            <div class="scroll-line"></div>
+        <div class="hero-container">
+            <div class="hero-image">
+                <div class="hero-image-placeholder">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="hero-image-overlay"></div>
+            </div>
+            <div class="hero-content">
+                <div class="hero-badge">Producteur Musical</div>
+                <h1 class="hero-title">Ciano Marshall</h1>
+                <p class="hero-subtitle">Créateur de beats Trap, Afro & Drill</p>
+                <p class="hero-description">Transforme tes idées en hits avec des productions uniques et authentiques</p>
+                <div class="hero-buttons">
+                    <button class="hero-btn primary" id="discover-btn">
+                        <span>Découvrez-moi</span>
+                        <i class="fas fa-arrow-down"></i>
+                    </button>
+                    <button class="hero-btn secondary" id="play-demo">
+                        <i class="fas fa-play"></i>
+                        <span>Écouter Demo</span>
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">500K+</span>
+                        <span class="stat-label">Écoutes</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">100+</span>
+                        <span class="stat-label">Artistes</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">8</span>
+                        <span class="stat-label">Années</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -115,11 +138,61 @@
     <!-- Playlist/Shop Section -->
     <section id="playlist" class="playlist">
         <div class="container">
-            <h2 class="section-title">Boutique de Beats</h2>
-            <p class="section-subtitle">Découvrez ma collection de beats premium</p>
+            <div class="playlist-header">
+                <h2 class="section-title">Ma Collection</h2>
+                <div class="playlist-controls">
+                    <button class="play-all-btn">
+                        <i class="fas fa-play"></i>
+                        Tout écouter
+                    </button>
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" data-view="grid">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
             
-            <div class="beats-grid" id="beats-grid">
-                <!-- Beats will be dynamically generated -->
+            <div class="playlist-container">
+                <div class="playlist-sidebar">
+                    <div class="playlist-info">
+                        <div class="playlist-cover">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <h3>Beats Collection</h3>
+                        <p>Par Ciano Marshall</p>
+                        <div class="playlist-meta">
+                            <span>6 titres</span>
+                            <span>•</span>
+                            <span>18 min</span>
+                        </div>
+                    </div>
+                    <div class="genre-filters">
+                        <h4>Genres</h4>
+                        <button class="filter-btn active" data-genre="all">Tous</button>
+                        <button class="filter-btn" data-genre="trap">Trap</button>
+                        <button class="filter-btn" data-genre="afrobeat">Afrobeat</button>
+                        <button class="filter-btn" data-genre="drill">Drill</button>
+                        <button class="filter-btn" data-genre="hip-hop">Hip-Hop</button>
+                    </div>
+                </div>
+                
+                <div class="playlist-content">
+                    <div class="playlist-table-header">
+                        <div class="col-number">#</div>
+                        <div class="col-title">Titre</div>
+                        <div class="col-genre">Genre</div>
+                        <div class="col-duration">Durée</div>
+                        <div class="col-price">Prix</div>
+                        <div class="col-actions">Actions</div>
+                    </div>
+                    <div class="beats-list" id="beats-list">
+                        <!-- Beats will be dynamically generated in Spotify-like format -->
+                    </div>
+                </div>
             </div>
         </div>
     </section>

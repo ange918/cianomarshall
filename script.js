@@ -16,7 +16,7 @@ const closeCart = document.getElementById('close-cart');
 const cartItems = document.getElementById('cart-items');
 const cartTotal = document.getElementById('cart-total');
 const checkoutBtn = document.getElementById('checkout-btn');
-const beatsGrid = document.getElementById('beats-grid');
+const beatsList = document.getElementById('beats-list');
 const testimonialsSlider = document.getElementById('testimonials-slider');
 const contactForm = document.getElementById('contact-form');
 
@@ -25,7 +25,9 @@ const beatsData = [
     {
         id: 1,
         title: "Trap King",
-        genre: "Trap",
+        artist: "Ciano Marshall",
+        genre: "trap",
+        duration: "2:45",
         audioSrc: "#", // In production, this would be real audio files
         prices: {
             simple: 25,
@@ -36,7 +38,9 @@ const beatsData = [
     {
         id: 2,
         title: "Afro Vibes",
-        genre: "Afrobeat",
+        artist: "Ciano Marshall",
+        genre: "afrobeat",
+        duration: "3:12",
         audioSrc: "#",
         prices: {
             simple: 30,
@@ -47,7 +51,9 @@ const beatsData = [
     {
         id: 3,
         title: "Drill Master",
-        genre: "Drill",
+        artist: "Ciano Marshall",
+        genre: "drill",
+        duration: "2:58",
         audioSrc: "#",
         prices: {
             simple: 35,
@@ -58,7 +64,9 @@ const beatsData = [
     {
         id: 4,
         title: "Urban Flow",
-        genre: "Hip-Hop",
+        artist: "Ciano Marshall",
+        genre: "hip-hop",
+        duration: "3:05",
         audioSrc: "#",
         prices: {
             simple: 25,
@@ -69,7 +77,9 @@ const beatsData = [
     {
         id: 5,
         title: "Night Rider",
-        genre: "Trap",
+        artist: "Ciano Marshall",
+        genre: "trap",
+        duration: "2:38",
         audioSrc: "#",
         prices: {
             simple: 40,
@@ -80,7 +90,9 @@ const beatsData = [
     {
         id: 6,
         title: "Afro Dreams",
-        genre: "Afrobeat",
+        artist: "Ciano Marshall",
+        genre: "afrobeat",
+        duration: "3:22",
         audioSrc: "#",
         prices: {
             simple: 28,
@@ -114,6 +126,14 @@ function setupEventListeners() {
         scrollToSection('about');
     });
     beatsBtn.addEventListener('click', () => scrollToSection('playlist'));
+    
+    // Demo button
+    const playDemoBtn = document.getElementById('play-demo');
+    if (playDemoBtn) {
+        playDemoBtn.addEventListener('click', () => {
+            showNotification('Lecture de la démo de Ciano Marshall...', 'success');
+        });
+    }
     
     // Cart functionality
     cartBtn.addEventListener('click', toggleCart);
@@ -211,73 +231,129 @@ function setupScrollEffects() {
     });
 }
 
-// Generate Beats
+// Generate Beats in Spotify Style
 function generateBeats() {
-    beatsGrid.innerHTML = '';
+    beatsList.innerHTML = '';
     
     beatsData.forEach((beat, index) => {
-        const beatCard = createBeatCard(beat, index);
-        beatsGrid.appendChild(beatCard);
+        const beatRow = createBeatRow(beat, index + 1);
+        beatsList.appendChild(beatRow);
     });
+    
+    setupPlaylistFilters();
 }
 
-function createBeatCard(beat, index) {
-    const card = document.createElement('div');
-    card.className = 'beat-card';
-    card.style.animationDelay = `${index * 0.1}s`;
+function createBeatRow(beat, number) {
+    const row = document.createElement('div');
+    row.className = 'beat-row';
+    row.dataset.genre = beat.genre;
     
-    card.innerHTML = `
-        <div class="beat-header">
-            <div class="beat-icon">
+    const genreCapitalized = beat.genre.charAt(0).toUpperCase() + beat.genre.slice(1);
+    
+    row.innerHTML = `
+        <div class="beat-number-section">
+            <span class="beat-number">${number}</span>
+            <button class="beat-play-btn">
+                <i class="fas fa-play"></i>
+            </button>
+        </div>
+        
+        <div class="beat-title-section">
+            <div class="beat-thumbnail">
                 <i class="fas fa-music"></i>
             </div>
-            <div class="beat-info">
-                <h3>${beat.title}</h3>
-                <span class="beat-genre">${beat.genre}</span>
+            <div class="beat-details">
+                <h4>${beat.title}</h4>
+                <span class="beat-artist">${beat.artist}</span>
             </div>
         </div>
         
-        <div class="beat-audio">
-            <audio controls>
-                <source src="${beat.audioSrc}" type="audio/mpeg">
-                Votre navigateur ne supporte pas l'élément audio.
-            </audio>
-        </div>
+        <div class="beat-genre-tag">${genreCapitalized}</div>
         
-        <div class="license-selector">
-            <label for="license-${beat.id}">Type de licence:</label>
-            <select id="license-${beat.id}" data-beat-id="${beat.id}">
-                <option value="simple">Simple - ${beat.prices.simple}€</option>
-                <option value="complete">Complète - ${beat.prices.complete}€</option>
-                <option value="vip">VIP - ${beat.prices.vip}€</option>
+        <div class="beat-duration">${beat.duration}</div>
+        
+        <div class="beat-price-section">
+            <select class="license-dropdown" id="license-${beat.id}" data-beat-id="${beat.id}">
+                <option value="simple">${beat.prices.simple}€</option>
+                <option value="complete">${beat.prices.complete}€</option>
+                <option value="vip">${beat.prices.vip}€</option>
             </select>
         </div>
         
-        <div class="beat-footer">
-            <div class="beat-price" id="price-${beat.id}">${beat.prices.simple}€</div>
+        <div class="beat-actions">
+            <button class="action-btn" title="Ajouter aux favoris">
+                <i class="fas fa-heart"></i>
+            </button>
             <button class="add-to-cart-btn" data-beat-id="${beat.id}">
                 <i class="fas fa-cart-plus"></i>
-                Ajouter au panier
+                Ajouter
             </button>
         </div>
     `;
     
     // Add event listeners
-    const licenseSelect = card.querySelector(`#license-${beat.id}`);
-    const priceDisplay = card.querySelector(`#price-${beat.id}`);
-    const addToCartBtn = card.querySelector('.add-to-cart-btn');
+    const playBtn = row.querySelector('.beat-play-btn');
+    const licenseSelect = row.querySelector(`#license-${beat.id}`);
+    const addToCartBtn = row.querySelector('.add-to-cart-btn');
     
-    licenseSelect.addEventListener('change', (e) => {
-        const selectedLicense = e.target.value;
-        const newPrice = beat.prices[selectedLicense];
-        priceDisplay.textContent = `${newPrice}€`;
+    playBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Simulate play functionality
+        showNotification(`Lecture de "${beat.title}"`, 'info');
     });
     
-    addToCartBtn.addEventListener('click', () => {
+    addToCartBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         addToCart(beat.id);
     });
     
-    return card;
+    return row;
+}
+
+function setupPlaylistFilters() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const selectedGenre = btn.dataset.genre;
+            filterBeatsByGenre(selectedGenre);
+        });
+    });
+    
+    // Setup view toggle
+    const viewBtns = document.querySelectorAll('.view-btn');
+    viewBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            viewBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // In a real app, this would switch between list and grid views
+            showNotification('Basculement de vue (fonctionnalité à venir)', 'info');
+        });
+    });
+    
+    // Setup play all button
+    const playAllBtn = document.querySelector('.play-all-btn');
+    if (playAllBtn) {
+        playAllBtn.addEventListener('click', () => {
+            showNotification('Lecture de toute la collection...', 'success');
+        });
+    }
+}
+
+function filterBeatsByGenre(genre) {
+    const beatRows = document.querySelectorAll('.beat-row');
+    
+    beatRows.forEach(row => {
+        if (genre === 'all' || row.dataset.genre === genre) {
+            row.style.display = 'grid';
+        } else {
+            row.style.display = 'none';
+        }
+    });
 }
 
 // Cart Functionality
