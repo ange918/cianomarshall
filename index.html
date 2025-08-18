@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeatMaster Pro - Premium Beats & Production</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>BeatMaster<span>Pro</span></h2>
+            </div>
+            
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">À propos</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#playlist" class="nav-link">Beats</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#testimonials" class="nav-link">Témoignages</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            
+            <div class="nav-icons">
+                <button class="cart-btn" id="cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <div class="hamburger" id="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">BeatMaster Pro</h1>
+            <p class="hero-subtitle">Producteur de beats Trap, Afro & Drill</p>
+            <p class="hero-description">Des beats uniques qui transforment vos idées en hits</p>
+            <button class="hero-btn" id="discover-btn">
+                <span>Découvrez-moi</span>
+                <i class="fas fa-arrow-down"></i>
+            </button>
+        </div>
+        <div class="hero-scroll-indicator">
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">À Propos</h2>
+                    <p class="about-description">
+                        Passionné par la musique urbaine depuis plus de 8 ans, je crée des beats qui capturent l'essence du Trap, de l'Afro et du Drill. Chaque production est pensée pour sublimer votre flow et donner vie à vos projets artistiques.
+                    </p>
+                    <p class="about-description">
+                        Avec plus de 500 beats vendus et des collaborations avec des artistes émergents, je mets mon expertise au service de votre créativité. Mon approche unique mélange sonorités modernes et influences authentiques.
+                    </p>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <h3>500+</h3>
+                            <p>Beats Vendus</p>
+                        </div>
+                        <div class="stat">
+                            <h3>100+</h3>
+                            <p>Artistes</p>
+                        </div>
+                        <div class="stat">
+                            <h3>8</h3>
+                            <p>Années d'exp.</p>
+                        </div>
+                    </div>
+                    <button class="about-btn" id="beats-btn">Voir mes Beats</button>
+                </div>
+                <div class="about-visual">
+                    <div class="about-image">
+                        <div class="about-placeholder">
+                            <i class="fas fa-music"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Playlist/Shop Section -->
+    <section id="playlist" class="playlist">
+        <div class="container">
+            <h2 class="section-title">Boutique de Beats</h2>
+            <p class="section-subtitle">Découvrez ma collection de beats premium</p>
+            
+            <div class="beats-grid" id="beats-grid">
+                <!-- Beats will be dynamically generated -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <h2 class="section-title">Témoignages</h2>
+            <div class="testimonials-slider" id="testimonials-slider">
+                <div class="testimonial active">
+                    <div class="testimonial-content">
+                        <p>"Les beats de BeatMaster Pro ont transformé ma musique. La qualité est exceptionnelle et le style unique."</p>
+                        <div class="testimonial-author">
+                            <h4>Alex Rodriguez</h4>
+                            <span>Rappeur</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <p>"Collaboration parfaite ! Des beats qui matchent exactement avec ma vision artistique. Hautement recommandé."</p>
+                        <div class="testimonial-author">
+                            <h4>Sarah Johnson</h4>
+                            <span>Chanteuse R&B</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <p>"Professionnel, créatif et toujours à l'écoute. Les beats de BeatMaster Pro font la différence sur mes tracks."</p>
+                        <div class="testimonial-author">
+                            <h4>Marcus Williams</h4>
+                            <span>Producteur</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Contact</h2>
+            <p class="section-subtitle">Prêt à créer ensemble ?</p>
+            
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>contact@beatmasterpro.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Téléphone</h4>
+                            <p>+33 6 12 34 56 78</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Localisation</h4>
+                            <p>Paris, France</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form class="contact-form" id="contact-form">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" placeholder="Votre nom" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" placeholder="Votre email" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" name="message" placeholder="Votre message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Envoyer le message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BeatMaster<span>Pro</span></h3>
+                    <p>Producteur de beats premium pour artistes exigeants</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="#home">Accueil</a></li>
+                        <li><a href="#about">À propos</a></li>
+                        <li><a href="#playlist">Beats</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Réseaux sociaux</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-spotify"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 BeatMaster Pro. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Panier</h3>
+            <button class="close-cart" id="close-cart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items will be dynamically added -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <h4>Total: <span id="cart-total">0€</span></h4>
+            </div>
+            <button class="checkout-btn" id="checkout-btn">Procéder au paiement</button>
+        </div>
+    </div>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
