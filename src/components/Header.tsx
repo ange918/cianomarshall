@@ -3,20 +3,26 @@ import { NAV_LINKS } from '../data/content'
 import Logo from './Logo'
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false)
+  const [revealed, setRevealed] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
+    // Le header reste masqué pendant l'intro plein écran, puis apparaît
+    // une fois la section héro dépassée.
+    const onScroll = () => setRevealed(window.scrollY > window.innerHeight * 0.85)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [])
 
   const closeMenu = () => setMenuOpen(false)
 
   return (
-    <header className={`header ${scrolled ? 'header--scrolled' : ''}`}>
+    <header className={`header header--scrolled ${revealed ? '' : 'header--hidden'}`}>
       <div className="header__inner">
         <a href="#accueil" className="brand" onClick={closeMenu} aria-label="Africa Fashion Awards — Accueil">
           <Logo className="brand__logo" />

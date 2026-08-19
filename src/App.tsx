@@ -1,5 +1,5 @@
 import Header from './components/Header'
-import Hero from './components/Hero'
+import HeroReveal from './components/HeroReveal'
 import About from './components/About'
 import Theme from './components/Theme'
 import Impact from './components/Impact'
@@ -12,7 +12,7 @@ export default function App() {
     <>
       <Header />
       <main>
-        <Hero />
+        <HeroReveal />
         <About />
         <Theme />
         <Impact />
