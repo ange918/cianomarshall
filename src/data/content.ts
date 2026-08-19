@@ -137,6 +137,10 @@ export type SupportTier = {
   audience: string
   description: string
   featured?: boolean
+  // 'donate' ouvre le paiement FeexPay ; 'email' ouvre le contact partenariats.
+  action: 'donate' | 'email'
+  // Montant suggéré (FCFA) pré-sélectionné à l'ouverture du don.
+  suggested?: number
 }
 
 // Section 7 — Formules d'engagement / soutien.
@@ -146,6 +150,7 @@ export const SUPPORT_TIERS: SupportTier[] = [
     audience: 'Public général',
     description:
       'Un soutien ponctuel, à la hauteur de vos moyens, pour accompagner l’émergence des créateurs africains.',
+    action: 'donate',
   },
   {
     name: 'Mécénat Majeur',
@@ -153,11 +158,14 @@ export const SUPPORT_TIERS: SupportTier[] = [
     description:
       'Un engagement fort de particuliers privilégiés, reconnus comme piliers de l’excellence culturelle africaine.',
     featured: true,
+    action: 'donate',
+    suggested: 50000,
   },
   {
     name: 'Sponsoring & Partenariat',
     audience: 'Entreprises',
     description:
       'Associez votre marque à l’audace et à la modernité africaines à travers un partenariat sur-mesure.',
+    action: 'email',
   },
 ]

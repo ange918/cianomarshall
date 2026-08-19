@@ -1,4 +1,5 @@
 import { CONTACT, SUPPORT_TIERS } from '../data/content'
+import { openDonation } from '../lib/donate'
 
 export default function Support() {
   return (
@@ -25,9 +26,19 @@ export default function Support() {
               <h3 className="tier-card__name">{tier.name}</h3>
               <span className="tier-card__audience">{tier.audience}</span>
               <p className="tier-card__desc">{tier.description}</p>
-              <a href={CONTACT.emailHref} className="tier-card__link">
-                Je m’engage →
-              </a>
+              {tier.action === 'donate' ? (
+                <button
+                  type="button"
+                  className="tier-card__link"
+                  onClick={() => openDonation(tier.suggested)}
+                >
+                  Je m’engage →
+                </button>
+              ) : (
+                <a href={CONTACT.emailHref} className="tier-card__link">
+                  Je m’engage →
+                </a>
+              )}
             </article>
           ))}
         </div>

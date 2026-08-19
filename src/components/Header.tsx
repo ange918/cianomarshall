@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NAV_LINKS } from '../data/content'
+import { openDonation } from '../lib/donate'
 import Logo from './Logo'
 
 export default function Header() {
@@ -38,15 +39,22 @@ export default function Header() {
               {link.label}
             </a>
           ))}
-          <a href="#soutenir" className="btn btn--gold nav__cta" onClick={closeMenu}>
+          <button
+            type="button"
+            className="btn btn--gold nav__cta"
+            onClick={() => {
+              closeMenu()
+              openDonation()
+            }}
+          >
             Faire un don
-          </a>
+          </button>
         </nav>
 
         <div className="header__actions">
-          <a href="#soutenir" className="btn btn--gold header__cta">
+          <button type="button" className="btn btn--gold header__cta" onClick={() => openDonation()}>
             Soutenir / Faire un don
-          </a>
+          </button>
           <button
             type="button"
             className={`burger ${menuOpen ? 'burger--open' : ''}`}

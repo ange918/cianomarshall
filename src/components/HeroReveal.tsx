@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import { SplitText } from 'gsap/SplitText'
+import { openDonation } from '../lib/donate'
 
 // Enregistrement des plugins + ease au niveau module (une seule fois).
 gsap.registerPlugin(CustomEase, SplitText)
@@ -250,7 +251,14 @@ export default function HeroReveal() {
       <div className="container">
         <nav>
           <p id="logo">A26</p>
-          <a href="#soutenir" className="hero-reveal__cta">
+          <a
+            href="#soutenir"
+            className="hero-reveal__cta"
+            onClick={(e) => {
+              e.preventDefault()
+              openDonation()
+            }}
+          >
             Faire un don
           </a>
         </nav>
