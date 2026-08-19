@@ -1,4 +1,8 @@
+import { TrendingUp, Newspaper, Sparkles, Scissors, Users } from 'lucide-react'
 import { ADVANTAGES, IMPACTS } from '../data/content'
+
+const IMPACT_ICONS = [TrendingUp, Newspaper, Sparkles]
+const ADVANTAGE_ICONS = [Scissors, Users]
 
 export default function Impact() {
   return (
@@ -14,20 +18,29 @@ export default function Impact() {
         </div>
 
         <div className="impact__row">
-          {IMPACTS.map((impact) => (
-            <article key={impact.title} className="impact-card">
-              <span className="impact-card__icon" aria-hidden="true">{impact.icon}</span>
-              <h3 className="impact-card__title">{impact.title}</h3>
-              <p className="impact-card__desc">{impact.description}</p>
-            </article>
-          ))}
+          {IMPACTS.map((impact, i) => {
+            const Icon = IMPACT_ICONS[i] ?? TrendingUp
+            return (
+              <article key={impact.title} className="impact-card">
+                <span className="impact-card__icon" aria-hidden="true">
+                  <Icon size={26} strokeWidth={1.75} />
+                </span>
+                <h3 className="impact-card__title">{impact.title}</h3>
+                <p className="impact-card__desc">{impact.description}</p>
+              </article>
+            )
+          })}
         </div>
 
         <div className="advantages">
-          {ADVANTAGES.map((group) => (
+          {ADVANTAGES.map((group, i) => {
+            const Icon = ADVANTAGE_ICONS[i] ?? Scissors
+            return (
             <article key={group.audience} className="advantage-card">
               <header className="advantage-card__head">
-                <span className="advantage-card__icon" aria-hidden="true">{group.icon}</span>
+                <span className="advantage-card__icon" aria-hidden="true">
+                  <Icon size={22} strokeWidth={1.75} />
+                </span>
                 <h3 className="advantage-card__title">{group.audience}</h3>
               </header>
               <ul className="advantage-card__list">
@@ -36,7 +49,8 @@ export default function Impact() {
                 ))}
               </ul>
             </article>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

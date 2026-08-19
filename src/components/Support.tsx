@@ -1,3 +1,4 @@
+import { Smartphone, Mail, ArrowRight } from 'lucide-react'
 import { CONTACT, SUPPORT_TIERS } from '../data/content'
 import { openDonation } from '../lib/donate'
 
@@ -32,11 +33,11 @@ export default function Support() {
                   className="tier-card__link"
                   onClick={() => openDonation(tier.suggested)}
                 >
-                  Je m’engage →
+                  Je m’engage <ArrowRight size={16} strokeWidth={2} />
                 </button>
               ) : (
                 <a href={CONTACT.emailHref} className="tier-card__link">
-                  Je m’engage →
+                  Je m’engage <ArrowRight size={16} strokeWidth={2} />
                 </a>
               )}
             </article>
@@ -47,14 +48,18 @@ export default function Support() {
           <p className="support__direct-label">Modes d’action directs</p>
           <div className="support__direct-actions">
             <a href={CONTACT.phoneHref} className="action-btn">
-              <span className="action-btn__icon" aria-hidden="true">📱</span>
+              <span className="action-btn__icon" aria-hidden="true">
+                <Smartphone size={22} strokeWidth={1.75} />
+              </span>
               <span className="action-btn__body">
                 <span className="action-btn__title">Mobile Money / Téléphone</span>
                 <span className="action-btn__value">{CONTACT.phone}</span>
               </span>
             </a>
             <a href={CONTACT.emailHref} className="action-btn">
-              <span className="action-btn__icon" aria-hidden="true">✉️</span>
+              <span className="action-btn__icon" aria-hidden="true">
+                <Mail size={22} strokeWidth={1.75} />
+              </span>
               <span className="action-btn__body">
                 <span className="action-btn__title">Email / Partenariats</span>
                 <span className="action-btn__value">{CONTACT.email}</span>

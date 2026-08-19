@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Smartphone, Mail, X } from 'lucide-react'
 import { CONTACT } from '../data/content'
 import { DONATION_PRESETS, FEEXPAY, isFeexPayConfigured } from '../config/feexpay'
 import { DONATE_EVENT, loadFeexPaySdk } from '../lib/donate'
@@ -93,7 +94,7 @@ export default function DonationModal() {
       <div className="donate__overlay" onClick={() => setOpen(false)} />
       <div className="donate__panel">
         <button className="donate__close" aria-label="Fermer" onClick={() => setOpen(false)}>
-          ✕
+          <X size={18} strokeWidth={2} />
         </button>
 
         {status === 'success' ? (
@@ -177,14 +178,18 @@ export default function DonationModal() {
                 </p>
                 <div className="donate__fallback-actions">
                   <a href={CONTACT.phoneHref} className="action-btn">
-                    <span className="action-btn__icon" aria-hidden="true">📱</span>
+                    <span className="action-btn__icon" aria-hidden="true">
+                      <Smartphone size={22} strokeWidth={1.75} />
+                    </span>
                     <span className="action-btn__body">
                       <span className="action-btn__title">Mobile Money</span>
                       <span className="action-btn__value">{CONTACT.phone}</span>
                     </span>
                   </a>
                   <a href={CONTACT.emailHref} className="action-btn">
-                    <span className="action-btn__icon" aria-hidden="true">✉️</span>
+                    <span className="action-btn__icon" aria-hidden="true">
+                      <Mail size={22} strokeWidth={1.75} />
+                    </span>
                     <span className="action-btn__body">
                       <span className="action-btn__title">Email</span>
                       <span className="action-btn__value">{CONTACT.email}</span>
