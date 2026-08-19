@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NAV_LINKS } from '../data/content'
+import Logo from './Logo'
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
@@ -18,8 +19,11 @@ export default function Header() {
     <header className={`header ${scrolled ? 'header--scrolled' : ''}`}>
       <div className="header__inner">
         <a href="#accueil" className="brand" onClick={closeMenu} aria-label="Africa Fashion Awards — Accueil">
-          <span className="brand__mark">AFA</span>
-          <span className="brand__sub">Royal Fashion Event</span>
+          <Logo className="brand__logo" />
+          <span className="brand__text">
+            <span className="brand__mark">AFA</span>
+            <span className="brand__sub">Royal Fashion Event</span>
+          </span>
         </a>
 
         <nav className={`nav ${menuOpen ? 'nav--open' : ''}`} aria-label="Navigation principale">

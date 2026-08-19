@@ -1,4 +1,5 @@
 import { CONTACT, EVENT, NAV_LINKS } from '../data/content'
+import Logo from './Logo'
 
 export default function Footer() {
   const year = new Date().getFullYear()
@@ -7,7 +8,10 @@ export default function Footer() {
     <footer className="footer">
       <div className="container footer__inner">
         <div className="footer__brand">
-          <span className="brand__mark">AFA</span>
+          <div className="footer__brand-row">
+            <Logo className="footer__logo" />
+            <span className="brand__mark">AFA</span>
+          </div>
           <p className="footer__tagline">
             Africa Fashion Awards — {EVENT.theme}. La plus grande cérémonie de la mode et de
             la beauté africaine, portée par {EVENT.organizer}.
