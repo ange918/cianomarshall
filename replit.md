@@ -1,51 +1,63 @@
-# BeatMaster Pro - Premium Beats & Production
+# Africa Fashion Awards 2026 — L'Ère des Audacieux
 
 ## Overview
 
-BeatMaster Pro is a music production website that serves as a platform for selling premium beats and music production services. The site features a modern, dark-themed design with a focus on showcasing beats across different genres like Trap, Afrobeat, and Drill. It includes an interactive shopping cart system, testimonials section, and contact functionality for potential clients to connect with the producer.
+Landing page de la 6ème édition des Africa Fashion Awards (AFA 2026), dont la
+thématique artistique est « L'Ère des Audacieux ». Le site présente l'événement,
+valorise la vision portée par Gauthier ORE et Royal Fashion Event, et incite le
+public, les mécènes et les entreprises à soutenir financièrement l'événement
+(appel aux dons — CTA majeur).
 
-## User Preferences
+L'événement a lieu le **15 novembre 2026**.
 
-Preferred communication style: Simple, everyday language.
+## Tech Stack
 
-## System Architecture
+- **React 18 + TypeScript** : interface construite en composants typés.
+- **Vite** : outil de build et serveur de développement (port 5000).
+- **CSS vanilla** : une feuille de style unique (`src/index.css`) définissant le
+  thème « luxe africain » (noir profond & or métallique), sans framework CSS.
+- **Google Fonts** : Cinzel (titres) et Plus Jakarta Sans (corps de texte).
 
-### Frontend Architecture
-- **Pure HTML/CSS/JavaScript**: Static frontend built with vanilla web technologies without any frameworks
-- **Responsive Design**: Mobile-first approach using CSS Grid and Flexbox for layout
-- **Component-based Structure**: Modular sections including navigation, hero, beats showcase, testimonials, and contact
-- **Interactive Elements**: Shopping cart functionality, audio players for beat previews, and testimonial sliders
+## Scripts
 
-### Design System
-- **Color Palette**: Black primary background with crimson red (#DC143C) and peach (#FFDAB9) accents
-- **Typography**: Google Fonts integration using Montserrat and Poppins font families
-- **Icons**: Font Awesome integration for consistent iconography
-- **Animations**: CSS transitions and transforms for smooth user interactions
+- `npm run dev` — serveur de développement Vite (http://localhost:5000)
+- `npm run build` — typecheck (`tsc -b`) puis build de production dans `dist/`
+- `npm run preview` — prévisualise le build de production
+- `npm run typecheck` — vérification TypeScript seule
 
-### Data Management
-- **Client-side Storage**: JavaScript arrays and local storage for cart management
-- **Static Data Structure**: Hardcoded beats data with properties for ID, title, genre, audio source, and pricing tiers (simple, complete, VIP)
+## Project Structure
 
-### User Interface Features
-- **Navigation**: Responsive hamburger menu for mobile devices
-- **Shopping Cart**: Sidebar cart with item management and total calculation
-- **Audio Preview**: Beat player controls for sampling tracks
-- **Contact Form**: Client inquiry form for custom work requests
-- **Testimonials**: Rotating testimonial slider for social proof
+- `index.html` — point d'entrée HTML avec balises SEO, Open Graph et polices.
+- `src/main.tsx` — montage de l'application React.
+- `src/App.tsx` — assemble les sections de la page.
+- `src/data/content.ts` — contenu éditorial centralisé et typé (textes, contacts,
+  piliers, étapes, formules de soutien).
+- `src/components/` — un composant par section :
+  - `Header` — navigation fixe + bouton « Soutenir / Faire un don » (menu mobile).
+  - `Hero` — bannière d'accueil avec titre, date et CTA principal.
+  - `About` — présentation des AFA et des corps de métier honorés.
+  - `Theme` — thématique « AUDACE » et ses piliers.
+  - `Impact` — impact digital/médiatique/personnel et avantages par public.
+  - `Process` — parcours des participants en 4 étapes.
+  - `Support` — appel aux dons, formules d'engagement et actions directes.
+  - `Footer` — mentions légales et contacts.
 
-## External Dependencies
+## Design System
 
-### Content Delivery Networks
-- **Google Fonts API**: Delivers Montserrat and Poppins font families
-- **Font Awesome CDN**: Provides scalable vector icons (version 6.4.0)
+- **Palette** : noir profond (#0A0A0A) / anthracite (#121212) en fond ; or brillant
+  (#D4AF37) et dégradés dorés en accents ; blanc et gris clair pour le texte.
+- **Typographies** : Cinzel (serif majestueuse) pour les titres, Plus Jakarta Sans
+  (sans-serif moderne) pour le corps.
+- **Responsive** : approche mobile-first, grilles CSS et flexbox, menu hamburger.
+- **Animations** : transitions et apparitions douces, désactivées si
+  `prefers-reduced-motion`.
 
-### Media Assets
-- **Audio Files**: External audio sources for beat previews (placeholders in current implementation)
-- **Images**: Profile pictures and background images for testimonials and hero sections
+## Contact
 
-### Browser APIs
-- **Local Storage**: For persistent cart data across sessions
-- **DOM Manipulation**: Native JavaScript for interactive functionality
-- **CSS Custom Properties**: For consistent theming and color management
+- Téléphone / Mobile Money : +229 01 69 89 69 50
+- Email / Partenariats : africafashionawards@gmail.com
+- Réseaux sociaux : @africafashionawards-afa
 
-Note: The current implementation uses placeholder audio sources that would need to be replaced with actual beat files in a production environment.
+## Deployment
+
+Déployé sur Vercel (framework Vite, dossier de sortie `dist/`). Voir `vercel.json`.
