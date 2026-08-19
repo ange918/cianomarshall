@@ -20,87 +20,8 @@ const beatsList = document.getElementById('beats-list');
 const testimonialsSlider = document.getElementById('testimonials-slider');
 const contactForm = document.getElementById('contact-form');
 
-// Sample Beats Data
-const beatsData = [
-    {
-        id: 1,
-        title: "Trap King",
-        artist: "Ciano Marshall",
-        genre: "trap",
-        duration: "2:45",
-        audioSrc: "#", // In production, this would be real audio files
-        prices: {
-            simple: 25,
-            complete: 50,
-            vip: 100
-        }
-    },
-    {
-        id: 2,
-        title: "Afro Vibes",
-        artist: "Ciano Marshall",
-        genre: "afrobeat",
-        duration: "3:12",
-        audioSrc: "#",
-        prices: {
-            simple: 30,
-            complete: 60,
-            vip: 120
-        }
-    },
-    {
-        id: 3,
-        title: "Drill Master",
-        artist: "Ciano Marshall",
-        genre: "drill",
-        duration: "2:58",
-        audioSrc: "#",
-        prices: {
-            simple: 35,
-            complete: 70,
-            vip: 140
-        }
-    },
-    {
-        id: 4,
-        title: "Urban Flow",
-        artist: "Ciano Marshall",
-        genre: "hip-hop",
-        duration: "3:05",
-        audioSrc: "#",
-        prices: {
-            simple: 25,
-            complete: 50,
-            vip: 100
-        }
-    },
-    {
-        id: 5,
-        title: "Night Rider",
-        artist: "Ciano Marshall",
-        genre: "trap",
-        duration: "2:38",
-        audioSrc: "#",
-        prices: {
-            simple: 40,
-            complete: 80,
-            vip: 160
-        }
-    },
-    {
-        id: 6,
-        title: "Afro Dreams",
-        artist: "Ciano Marshall",
-        genre: "afrobeat",
-        duration: "3:22",
-        audioSrc: "#",
-        prices: {
-            simple: 28,
-            complete: 55,
-            vip: 110
-        }
-    }
-];
+// Beats Data
+const beatsData = [];
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', function() {
@@ -686,4 +607,4 @@ function setupAccessibility() {
 // Initialize accessibility features
 setupAccessibility();
 
-console.log('🎵 BeatMaster Pro - Application initialized successfully!');
+console.log('Application initialized successfully!');
