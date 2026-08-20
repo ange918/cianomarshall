@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import { SplitText } from 'gsap/SplitText'
 import { openDonation } from '../lib/donate'
+import { smoothScrollTo } from '../lib/nav'
 
 // Enregistrement des plugins + ease au niveau module (une seule fois).
 gsap.registerPlugin(CustomEase, SplitText)
@@ -269,7 +270,15 @@ export default function HeroReveal() {
           <h1>Audace</h1>
         </div>
         <footer>
-          <a href="#evenement">Scroll Down</a>
+          <a
+            href="#evenement"
+            onClick={(e) => {
+              e.preventDefault()
+              smoothScrollTo('evenement')
+            }}
+          >
+            Scroll Down
+          </a>
           <p>Africa Fashion Awards 2026</p>
         </footer>
       </div>

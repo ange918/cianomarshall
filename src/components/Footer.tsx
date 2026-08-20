@@ -1,4 +1,5 @@
 import { CONTACT, EVENT, NAV_LINKS } from '../data/content'
+import { navigateTo } from '../lib/nav'
 import Logo from './Logo'
 
 export default function Footer() {
@@ -21,7 +22,15 @@ export default function Footer() {
         <nav className="footer__nav" aria-label="Navigation du pied de page">
           <span className="footer__col-title">Navigation</span>
           {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} className="footer__link">
+            <a
+              key={link.href}
+              href={link.href}
+              className="footer__link"
+              onClick={(e) => {
+                e.preventDefault()
+                navigateTo(link.href.replace(/^#/, ''))
+              }}
+            >
               {link.label}
             </a>
           ))}
