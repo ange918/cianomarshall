@@ -892,7 +892,6 @@ ol {
 
 /* ---------- Animations d'apparition ---------- */
 @media (prefers-reduced-motion: no-preference) {
-  .section .section__head,
   .pillar-card,
   .impact-card,
   .advantage-card,
@@ -900,6 +899,13 @@ ol {
   .tier-card {
     animation: rise 0.7s ease both;
   }
+}
+
+/* Révélation ligne par ligne (SplitText) : chaque ligne masquée démarre
+   sous son cache et remonte. Aucun flash avant l'exécution du JS. */
+.line {
+  transform: translateY(100%);
+  will-change: transform;
 }
 
 @keyframes rise {
@@ -1466,4 +1472,39 @@ button.tier-card__link {
   .donate__grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ============================================================
+   Rideau de transition entre sections (scaleY split-curtain)
+   ============================================================ */
+.curtain {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 5000;
+  pointer-events: none;
+}
+
+.curtain__row {
+  flex: 1;
+  display: flex;
+}
+
+.curtain__block {
+  flex: 1;
+  background-color: var(--gold);
+  transform: scaleY(0);
+  visibility: hidden;
+  will-change: transform;
+}
+
+.curtain__row--top .curtain__block {
+  transform-origin: top;
+}
+
+.curtain__row--bottom .curtain__block {
+  transform-origin: bottom;
 }

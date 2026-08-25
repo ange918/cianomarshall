@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { NAV_LINKS } from '../data/content'
 import { openDonation } from '../lib/donate'
+import { navigateTo, smoothScrollTo } from '../lib/nav'
 import Logo from './Logo'
+
+const routeId = (href: string) => href.replace(/^#/, '')
 
 export default function Header() {
   const [revealed, setRevealed] = useState(false)
@@ -25,7 +28,16 @@ export default function Header() {
   return (
     <header className={`header header--scrolled ${revealed ? '' : 'header--hidden'}`}>
       <div className="header__inner">
-        <a href="#accueil" className="brand" onClick={closeMenu} aria-label="Africa Fashion Awards — Accueil">
+        <a
+          href="#accueil"
+          className="brand"
+          onClick={(e) => {
+            e.preventDefault()
+            closeMenu()
+            smoothScrollTo('accueil')
+          }}
+          aria-label="Africa Fashion Awards — Accueil"
+        >
           <Logo className="brand__logo" />
           <span className="brand__text">
             <span className="brand__mark">AFA</span>
@@ -35,7 +47,16 @@ export default function Header() {
 
         <nav className={`nav ${menuOpen ? 'nav--open' : ''}`} aria-label="Navigation principale">
           {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} className="nav__link" onClick={closeMenu}>
+            <a
+              key={link.href}
+              href={link.href}
+              className="nav__link"
+              onClick={(e) => {
+                e.preventDefault()
+                closeMenu()
+                navigateTo(routeId(link.href))
+              }}
+            >
               {link.label}
             </a>
           ))}
