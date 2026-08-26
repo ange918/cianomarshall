@@ -7,7 +7,7 @@ import {
   getCreds,
   isNetwork,
   normalizePhone,
-} from '../_feexpay'
+} from '../_feexpay.js'
 
 // Lance une demande de paiement Mobile Money (request-to-pay) via FeexPay.
 export default async function handler(req: VercelRequest, res: VercelResponse) {

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { FEEXPAY_BASE, authHeaders, getCreds } from '../_feexpay'
+import { FEEXPAY_BASE, authHeaders, getCreds } from '../_feexpay.js'
 
 // Vérifie le statut d'une transaction FeexPay (PENDING / SUCCESSFUL / FAILED).
 export default async function handler(req: VercelRequest, res: VercelResponse) {
