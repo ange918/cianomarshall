@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { FEEXPAY_BASE, authHeaders, getCreds } from '../_feexpay.js'
+import { FEEXPAY_BASE, getCreds } from '../_feexpay.js'
 
-// Vérifie le statut d'une transaction FeexPay (PENDING / SUCCESSFUL / FAILED).
+// Vérifie le statut d'une transaction FeexPay (PENDING / SUCCESSFUL / FAILED)
+// via le flux « integration » du SDK officiel.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET')
@@ -23,10 +24,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const upstream = await fetch(
-      `${FEEXPAY_BASE}/api/transactions/public/single/status/${encodeURIComponent(ref)}`,
-      { headers: authHeaders(creds.apiKey) },
+      `${FEEXPAY_BASE}/api/transactions/getrequesttopay/integration/${encodeURIComponent(ref)}`,
+      { headers: { Authorization: `Bearer ${creds.apiKey}` } },
     )
-    const data: any = await upstream.json().catch(() => ({}))
+    const raw = await upstream.text()
+    let data: any = {}
+    try {
+      data = raw ? JSON.parse(raw) : {}
+    } catch {
+      data = {}
+    }
+    console.log('[feexpay:status] ←', upstream.status, raw ? raw.slice(0, 400) : '(vide)')
+
     if (!upstream.ok) {
       return res.status(502).json({
         error: (data && (data.message || data.error)) || 'Statut indisponible.',
@@ -34,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     return res.status(200).json({
       status: data.status ?? 'PENDING',
-      reason: data.reason ?? '',
+      reason: data.reason ?? data.message ?? '',
     })
   } catch (err) {
     return res
