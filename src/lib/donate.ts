@@ -17,9 +17,12 @@ export type RequestToPayInput = {
 export type PaymentStatus = 'PENDING' | 'SUCCESSFUL' | 'FAILED'
 
 // Lance une demande de paiement via notre fonction serverless (API FeexPay v2).
+// FeexPay fonctionne en mode asynchrone : il accuse réception de la demande
+// (la demande part sur le téléphone du donateur) sans forcément renvoyer une
+// référence exploitable. On considère donc la demande « envoyée ».
 export async function requestToPay(
   input: RequestToPayInput,
-): Promise<{ reference: string; status: PaymentStatus }> {
+): Promise<{ reference: string | null }> {
   const res = await fetch('/api/feexpay/requesttopay', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -27,16 +30,5 @@ export async function requestToPay(
   })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(data?.error || 'Le paiement n’a pas pu être lancé.')
-  if (!data.reference) throw new Error('Réponse FeexPay invalide (référence manquante).')
-  return { reference: data.reference, status: (data.status as PaymentStatus) ?? 'PENDING' }
-}
-
-// Interroge le statut d'une transaction.
-export async function getPaymentStatus(
-  reference: string,
-): Promise<{ status: PaymentStatus; reason: string }> {
-  const res = await fetch(`/api/feexpay/status?ref=${encodeURIComponent(reference)}`)
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data?.error || 'Statut du paiement indisponible.')
-  return { status: (data.status as PaymentStatus) ?? 'PENDING', reason: data.reason ?? '' }
+  return { reference: data.reference ?? null }
 }

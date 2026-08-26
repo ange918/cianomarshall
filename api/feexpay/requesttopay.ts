@@ -43,11 +43,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Numéro de téléphone invalide.' })
   }
 
-  // Corps STRICTEMENT conforme à l'exemple documenté v2 (numéro numérique).
+  const origin =
+    (typeof req.headers.origin === 'string' && req.headers.origin) ||
+    (req.headers.host ? `https://${req.headers.host}` : 'https://africafashionawards.com')
+
+  // Corps conforme à l'exemple documenté v2 (numéro numérique) + callback pour
+  // le mode asynchrone (FeexPay accuse réception puis notifie le callback).
   const payload = {
     shop: creds.shopId,
     amount,
     phoneNumber: Number(phoneDigits),
+    callback_url: origin,
+    callback_info: { source: 'afa-2026' },
   }
 
   try {
@@ -80,21 +87,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
+    // FeexPay a accepté la demande. En mode synchrone il renvoie une référence ;
+    // en mode asynchrone il répond seulement { received: true } — dans les deux
+    // cas la demande est partie (le donateur valide sur son téléphone).
     const reference = data.reference ?? data.transaction_id ?? data.transref ?? data.id
-    if (!reference) {
-      return res.status(502).json({
-        error:
-          (data && data.message)
-            ? `FeexPay : ${data.message}`
-            : `FeexPay n'a pas renvoyé de référence (réponse : ${
-                raw ? raw.slice(0, 200) : 'vide'
-              }).`,
-        details: data,
-      })
-    }
-
     return res.status(200).json({
-      reference,
+      accepted: true,
+      reference: reference ?? null,
       status: data.status ?? 'PENDING',
     })
   } catch (err) {

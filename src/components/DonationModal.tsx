@@ -1,12 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { AMOUNT_MAX, AMOUNT_MIN, DONATION_PRESETS, NETWORKS, type NetworkId } from '../config/feexpay'
-import { DONATE_EVENT, getPaymentStatus, requestToPay } from '../lib/donate'
+import { DONATE_EVENT, requestToPay } from '../lib/donate'
 
-type Status = 'form' | 'submitting' | 'pending' | 'success' | 'failed'
-
-const POLL_INTERVAL_MS = 4000
-const POLL_TIMEOUT_MS = 120000
+type Status = 'form' | 'submitting' | 'sent' | 'failed'
 
 function formatXOF(n: number) {
   return new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
@@ -20,14 +17,6 @@ export default function DonationModal() {
   const [network, setNetwork] = useState<NetworkId>('mtn')
   const [phone, setPhone] = useState('')
   const [reason, setReason] = useState('')
-  const pollRef = useRef<number | null>(null)
-
-  const stopPolling = () => {
-    if (pollRef.current !== null) {
-      window.clearInterval(pollRef.current)
-      pollRef.current = null
-    }
-  }
 
   useEffect(() => {
     const onOpen = (e: Event) => {
@@ -42,10 +31,7 @@ export default function DonationModal() {
   }, [])
 
   useEffect(() => {
-    if (!open) {
-      stopPolling()
-      return
-    }
+    if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
     }
@@ -57,47 +43,17 @@ export default function DonationModal() {
     }
   }, [open])
 
-  useEffect(() => () => stopPolling(), [])
-
   const effectiveAmount = custom ? Math.max(0, Math.round(Number(custom))) : amount
   const amountValid = effectiveAmount >= AMOUNT_MIN && effectiveAmount <= AMOUNT_MAX
   const phoneValid = phone.replace(/\D/g, '').length >= 10
-
-  const startPolling = (reference: string) => {
-    const started = Date.now()
-    pollRef.current = window.setInterval(async () => {
-      try {
-        const { status: st, reason: rs } = await getPaymentStatus(reference)
-        if (st === 'SUCCESSFUL') {
-          stopPolling()
-          setStatus('success')
-        } else if (st === 'FAILED') {
-          stopPolling()
-          setReason(rs || 'Le paiement a échoué.')
-          setStatus('failed')
-        } else if (Date.now() - started > POLL_TIMEOUT_MS) {
-          stopPolling()
-          setReason('Délai dépassé. Si vous avez validé sur votre téléphone, réessayez.')
-          setStatus('failed')
-        }
-      } catch {
-        // Erreur réseau ponctuelle : on retente au tick suivant.
-      }
-    }, POLL_INTERVAL_MS)
-  }
 
   const handleSubmit = async () => {
     if (!amountValid || !phoneValid) return
     setReason('')
     setStatus('submitting')
     try {
-      const { reference } = await requestToPay({
-        amount: effectiveAmount,
-        network,
-        phoneNumber: phone,
-      })
-      setStatus('pending')
-      startPolling(reference)
+      await requestToPay({ amount: effectiveAmount, network, phoneNumber: phone })
+      setStatus('sent')
     } catch (err) {
       setReason(err instanceof Error ? err.message : 'Le paiement n’a pas pu être lancé.')
       setStatus('failed')
@@ -108,7 +64,6 @@ export default function DonationModal() {
 
   const close = () => setOpen(false)
   const backToForm = () => {
-    stopPolling()
     setReason('')
     setStatus('form')
   }
@@ -121,30 +76,20 @@ export default function DonationModal() {
           <X size={18} strokeWidth={2} />
         </button>
 
-        {status === 'success' ? (
+        {status === 'sent' ? (
           <div className="donate__done">
-            <span className="donate__kicker">Merci</span>
-            <h3 className="donate__title">Votre don est confirmé</h3>
+            <span className="donate__kicker">Demande envoyée</span>
+            <h3 className="donate__title">Validez sur votre téléphone</h3>
             <p className="donate__lead">
-              Merci de soutenir l’audace africaine. Votre contribution fait vivre les Africa
-              Fashion Awards 2026.
+              Une demande de paiement de <strong>{formatXOF(effectiveAmount)}</strong> vient d’être
+              envoyée au <strong>{phone}</strong>. Confirmez-la avec votre code{' '}
+              {network.toUpperCase()} Mobile Money pour finaliser votre don.
+            </p>
+            <p className="donate__lead">
+              Merci de soutenir l’audace africaine. 💛
             </p>
             <button className="btn btn--gold" onClick={close}>
               Fermer
-            </button>
-          </div>
-        ) : status === 'pending' ? (
-          <div className="donate__done">
-            <span className="donate__kicker">En attente</span>
-            <h3 className="donate__title">Validez sur votre téléphone</h3>
-            <p className="donate__lead">
-              Une demande de paiement de <strong>{formatXOF(effectiveAmount)}</strong> a été
-              envoyée au <strong>{phone}</strong>. Confirmez avec votre code {network.toUpperCase()}{' '}
-              Mobile Money. Cette fenêtre se met à jour automatiquement.
-            </p>
-            <span className="donate__spinner" aria-hidden="true" />
-            <button className="btn btn--ghost" onClick={backToForm}>
-              Annuler
             </button>
           </div>
         ) : (
@@ -226,6 +171,9 @@ export default function DonationModal() {
               <div className="donate__notice">
                 <p>Le paiement n’a pas abouti.</p>
                 <p className="donate__reason">{reason}</p>
+                <button className="btn btn--ghost" onClick={backToForm}>
+                  Réessayer
+                </button>
               </div>
             )}
 
