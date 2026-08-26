@@ -1,35 +1,21 @@
-// Helper serveur FeexPay — partagé par les fonctions serverless.
-// La clé API vit uniquement côté serveur (jamais dans le bundle navigateur).
+// Helper serveur FeexPay (API v2 « public ») — partagé par les fonctions
+// serverless. La clé API vit uniquement côté serveur (jamais dans le bundle
+// navigateur).
 
-// Hôte de l'API « integration » (flux du SDK officiel qui renvoie une
-// référence de transaction, contrairement à l'endpoint v2 public qui répond
-// seulement {"received":true}).
-export const FEEXPAY_BASE = 'https://api.feexpay.me'
+// API v2 publique de FeexPay (le serveur qui répond).
+export const FEEXPAY_BASE = 'https://api-v2.feexpay.me'
 
 export const NETWORKS = ['mtn', 'moov', 'celtiis'] as const
 export type Network = (typeof NETWORKS)[number]
 
-// Nom du réseau attendu par FeexPay dans le corps (champ « reseau »).
-// Valeurs tirées du mappage NETWORK_API_MAPPING (Bénin) du SDK officiel :
-// Celtiis Bénin doit être « CELTIIS BJ » (et non « CELTIIS »), sinon 502.
-const RESEAU_NAMES: Record<Network, string> = {
-  mtn: 'MTN',
-  moov: 'MOOV',
-  celtiis: 'CELTIIS BJ',
-}
-export function reseauName(network: Network): string {
-  return RESEAU_NAMES[network]
-}
-
 export const AMOUNT_MIN = 100
 export const AMOUNT_MAX = 2_000_000
 
-export type FeexPayCreds = { apiKey: string; shopId: string }
-
-// Identifiant de la boutique FeexPay. Public (il est de toute façon transmis
-// au navigateur par le SDK), donc défini ici : changer de boutique = changer
-// cette valeur, sans reconfigurer Vercel.
+// Identifiant de la boutique FeexPay (public — il part de toute façon vers
+// FeexPay). Défini ici : changer de boutique = changer cette valeur.
 export const SHOP_ID = 'MGk7Dv1POaTTuY5'
+
+export type FeexPayCreds = { apiKey: string; shopId: string }
 
 // Lit la clé (secrète) depuis l'environnement serveur ; l'ID boutique vient
 // du code. Accepte FEEXPAY_API_KEY ou FEEXPAY_TOKEN (noms interchangeables).

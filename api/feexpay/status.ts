@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { FEEXPAY_BASE, getCreds } from '../_feexpay.js'
+import { FEEXPAY_BASE, authHeaders, getCreds } from '../_feexpay.js'
 
 // Vérifie le statut d'une transaction FeexPay (PENDING / SUCCESSFUL / FAILED)
-// via le flux « integration » du SDK officiel.
+// via l'API v2 publique.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET')
@@ -12,8 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const creds = getCreds()
   if (!creds) {
     return res.status(500).json({
-      error:
-        'Paiement non configuré côté serveur (FEEXPAY_API_KEY / FEEXPAY_SHOP_ID manquants dans Vercel).',
+      error: 'Paiement non configuré côté serveur (FEEXPAY_TOKEN manquant dans Vercel).',
     })
   }
 
@@ -24,7 +23,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const upstream = await fetch(
-      `${FEEXPAY_BASE}/api/transactions/getrequesttopay/integration/${encodeURIComponent(ref)}`,
+      `${FEEXPAY_BASE}/api/transactions/public/single/status/${encodeURIComponent(ref)}`,
+      { headers: authHeaders(creds.apiKey) },
     )
     const raw = await upstream.text()
     let data: any = {}
@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch {
       data = {}
     }
-    console.log('[feexpay:status] ←', upstream.status, raw ? raw.slice(0, 400) : '(vide)')
+    console.log('[feexpay:status] ←', upstream.status, raw ? raw.slice(0, 300) : '(vide)')
 
     if (!upstream.ok) {
       return res.status(502).json({
