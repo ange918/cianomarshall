@@ -58,16 +58,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     )
 
-    const data: any = await upstream.json().catch(() => ({}))
+    // Lit le corps brut puis tente de le parser : on ne perd pas l'info si
+    // FeexPay renvoie un corps non-JSON ou une erreur applicative en HTTP 2xx.
+    const raw = await upstream.text()
+    let data: any = {}
+    try {
+      data = raw ? JSON.parse(raw) : {}
+    } catch {
+      data = {}
+    }
+    // Journalisé pour diagnostic (visible dans les logs runtime Vercel).
+    console.log('[feexpay:requesttopay]', upstream.status, raw ? raw.slice(0, 800) : '(vide)')
+
     if (!upstream.ok) {
       return res.status(502).json({
-        error: (data && (data.message || data.error)) || 'FeexPay a refusé la demande.',
+        error:
+          (data && (data.message || data.error)) ||
+          `FeexPay a refusé la demande (HTTP ${upstream.status}).`,
+        details: data,
+      })
+    }
+
+    // La référence peut arriver sous différentes clés selon l'endpoint FeexPay.
+    const reference = data.reference ?? data.transref ?? data.transaction_id ?? data.id
+    if (!reference) {
+      return res.status(502).json({
+        error:
+          (data && data.message)
+            ? `FeexPay : ${data.message}`
+            : 'FeexPay a répondu sans référence de transaction.',
         details: data,
       })
     }
 
     return res.status(200).json({
-      reference: data.reference,
+      reference,
       status: data.status ?? 'PENDING',
     })
   } catch (err) {
