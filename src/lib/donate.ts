@@ -1,4 +1,6 @@
-// Petit bus d'événement pour ouvrir le modal de don depuis n'importe quel CTA.
+// Bus d'événement pour ouvrir le modal de don + appels à notre backend FeexPay.
+
+import type { NetworkId } from '../config/feexpay'
 
 export const DONATE_EVENT = 'afa:donate'
 
@@ -6,28 +8,37 @@ export function openDonation(amount?: number) {
   window.dispatchEvent(new CustomEvent(DONATE_EVENT, { detail: { amount } }))
 }
 
-declare global {
-  interface Window {
-    FeexPayButton?: { init: (containerId: string, options: Record<string, unknown>) => void }
-  }
+export type RequestToPayInput = {
+  amount: number
+  network: NetworkId
+  phoneNumber: string
+  firstName?: string
+  lastName?: string
 }
 
-let sdkPromise: Promise<void> | null = null
+export type PaymentStatus = 'PENDING' | 'SUCCESSFUL' | 'FAILED'
 
-// Charge le SDK JavaScript hébergé par FeexPay (une seule fois).
-export function loadFeexPaySdk(url: string): Promise<void> {
-  if (typeof window !== 'undefined' && window.FeexPayButton) return Promise.resolve()
-  if (sdkPromise) return sdkPromise
-  sdkPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-    script.src = url
-    script.async = true
-    script.onload = () => resolve()
-    script.onerror = () => {
-      sdkPromise = null
-      reject(new Error('FeexPay SDK failed to load'))
-    }
-    document.head.appendChild(script)
+// Lance une demande de paiement via notre fonction serverless.
+export async function requestToPay(
+  input: RequestToPayInput,
+): Promise<{ reference: string; status: PaymentStatus }> {
+  const res = await fetch('/api/feexpay/requesttopay', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
   })
-  return sdkPromise
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data?.error || 'Le paiement n’a pas pu être lancé.')
+  if (!data.reference) throw new Error('Réponse FeexPay invalide (référence manquante).')
+  return { reference: data.reference, status: (data.status as PaymentStatus) ?? 'PENDING' }
+}
+
+// Interroge le statut d'une transaction.
+export async function getPaymentStatus(
+  reference: string,
+): Promise<{ status: PaymentStatus; reason: string }> {
+  const res = await fetch(`/api/feexpay/status?ref=${encodeURIComponent(reference)}`)
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data?.error || 'Statut du paiement indisponible.')
+  return { status: (data.status as PaymentStatus) ?? 'PENDING', reason: data.reason ?? '' }
 }
