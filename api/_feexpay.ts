@@ -1,10 +1,23 @@
 // Helper serveur FeexPay — partagé par les fonctions serverless.
 // La clé API vit uniquement côté serveur (jamais dans le bundle navigateur).
 
-export const FEEXPAY_BASE = 'https://api-v2.feexpay.me'
+// Hôte de l'API « integration » (flux du SDK officiel qui renvoie une
+// référence de transaction, contrairement à l'endpoint v2 public qui répond
+// seulement {"received":true}).
+export const FEEXPAY_BASE = 'https://api.feexpay.me'
 
 export const NETWORKS = ['mtn', 'moov', 'celtiis'] as const
 export type Network = (typeof NETWORKS)[number]
+
+// Nom du réseau attendu par FeexPay dans le corps (champ « reseau »).
+const RESEAU_NAMES: Record<Network, string> = {
+  mtn: 'MTN',
+  moov: 'MOOV',
+  celtiis: 'CELTIIS',
+}
+export function reseauName(network: Network): string {
+  return RESEAU_NAMES[network]
+}
 
 export const AMOUNT_MIN = 100
 export const AMOUNT_MAX = 2_000_000

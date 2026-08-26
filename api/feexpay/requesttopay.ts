@@ -3,13 +3,16 @@ import {
   AMOUNT_MAX,
   AMOUNT_MIN,
   FEEXPAY_BASE,
-  authHeaders,
   getCreds,
   isNetwork,
   normalizePhone,
+  reseauName,
 } from '../_feexpay.js'
 
-// Lance une demande de paiement Mobile Money (request-to-pay) via FeexPay.
+// Lance une demande de paiement Mobile Money via le flux « integration » de
+// FeexPay (celui du SDK officiel), qui renvoie une référence de transaction
+// exploitable pour le suivi (contrairement à l'endpoint v2 public qui répond
+// seulement {"received":true}).
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
@@ -41,25 +44,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Numéro de téléphone invalide.' })
   }
 
+  const firstName = str(body.firstName).trim() || 'Donateur'
+  const email = str(body.email).trim() || 'don@africafashionawards.com'
+
+  // Corps en application/x-www-form-urlencoded, comme le SDK officiel.
+  const form = new URLSearchParams({
+    phoneNumber,
+    amount: String(amount),
+    reseau: reseauName(network),
+    token: creds.apiKey,
+    shop: creds.shopId,
+    first_name: firstName,
+    email,
+  })
+
   try {
+    console.log('[feexpay:requesttopay] →', reseauName(network), phoneNumber, amount)
     const upstream = await fetch(
-      `${FEEXPAY_BASE}/api/transactions/public/requesttopay/${network}`,
+      `${FEEXPAY_BASE}/api/transactions/requesttopay/integration`,
       {
         method: 'POST',
-        headers: authHeaders(creds.apiKey),
-        body: JSON.stringify({
-          shop: creds.shopId,
-          amount,
-          phoneNumber,
-          first_name: str(body.firstName),
-          last_name: str(body.lastName),
-          description: 'Don Africa Fashion Awards 2026',
-        }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form.toString(),
       },
     )
 
-    // Lit le corps brut puis tente de le parser : on ne perd pas l'info si
-    // FeexPay renvoie un corps non-JSON ou une erreur applicative en HTTP 2xx.
     const raw = await upstream.text()
     let data: any = {}
     try {
@@ -68,7 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       data = {}
     }
     // Journalisé pour diagnostic (visible dans les logs runtime Vercel).
-    console.log('[feexpay:requesttopay]', upstream.status, raw ? raw.slice(0, 800) : '(vide)')
+    console.log('[feexpay:requesttopay] ←', upstream.status, raw ? raw.slice(0, 800) : '(vide)')
 
     if (!upstream.ok) {
       return res.status(502).json({
@@ -79,14 +88,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    // La référence peut arriver sous différentes clés selon l'endpoint FeexPay.
+    // FeexPay renvoie status "FAILED" quand le numéro est incorrect.
+    if (data.status === 'FAILED') {
+      return res.status(502).json({
+        error: 'Numéro Mobile Money invalide ou paiement refusé par FeexPay.',
+        details: data,
+      })
+    }
+
     const reference = data.reference ?? data.transref ?? data.transaction_id ?? data.id
     if (!reference) {
       return res.status(502).json({
         error:
           (data && data.message)
             ? `FeexPay : ${data.message}`
-            : 'FeexPay a répondu sans référence de transaction.',
+            : `FeexPay n'a pas renvoyé de référence (réponse : ${
+                raw ? raw.slice(0, 200) : 'vide'
+              }).`,
         details: data,
       })
     }
