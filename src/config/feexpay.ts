@@ -5,6 +5,10 @@
 export const AMOUNT_MIN = 100
 export const AMOUNT_MAX = 2_000_000
 
+// Page de paiement hébergée FeexPay (FeexLink). C'est FeexPay qui gère tout le
+// paiement sur cette page (réseau, numéro, prompt PIN, confirmation).
+export const FEEXPAY_LINK = 'https://link.feexpay.me/yZRShkSQ/'
+
 // Montants de don proposés (en FCFA / XOF).
 export const DONATION_PRESETS = [2000, 5000, 10000, 25000, 50000] as const
 
