@@ -20,6 +20,7 @@ export default function DonationModal() {
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [reason, setReason] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Ouverture depuis n'importe quel CTA « faire un don ».
@@ -53,15 +54,25 @@ export default function DonationModal() {
   const handleSubmit = async () => {
     if (!effectiveAmount || effectiveAmount < 100) return
 
+    // Diagnostic clair : quelles clés sont détectées dans ce build.
     if (!isFeexPayConfigured()) {
+      const missing = [
+        !FEEXPAY.shopId && 'VITE_FEEXPAY_SHOP_ID',
+        !FEEXPAY.token && 'VITE_FEEXPAY_TOKEN',
+      ].filter(Boolean)
+      setReason(
+        `Clés FeexPay non détectées dans ce build (${missing.join(' + ')} vide). ` +
+          'Ajoutez-les dans Vercel pour l’environnement testé, puis redéployez.',
+      )
       setStatus('error')
       return
     }
 
     setStatus('loading')
+    setReason('')
     try {
       await loadFeexPaySdk(FEEXPAY.sdkUrl)
-      if (!window.FeexPayButton || !containerRef.current) throw new Error('SDK indisponible')
+      if (!window.FeexPayButton || !containerRef.current) throw new Error('SDK FeexPay indisponible')
       containerRef.current.innerHTML = ''
       window.FeexPayButton.init(FEEX_CONTAINER, {
         id: FEEXPAY.shopId,
@@ -81,7 +92,8 @@ export default function DonationModal() {
         callback: () => setStatus('success'),
       })
       setStatus('ready')
-    } catch {
+    } catch (err) {
+      setReason(err instanceof Error ? err.message : 'Échec du chargement de FeexPay.')
       setStatus('error')
     }
   }
@@ -189,10 +201,10 @@ export default function DonationModal() {
             )}
 
             {status === 'error' && (
-              <p className="donate__notice">
-                Le paiement en ligne n’est pas encore disponible. Merci de réessayer un peu
-                plus tard.
-              </p>
+              <div className="donate__notice">
+                <p>Le paiement en ligne n’est pas encore disponible.</p>
+                {reason && <p className="donate__reason">{reason}</p>}
+              </div>
             )}
 
             <p className="donate__secure">Paiement sécurisé · FeexPay · XOF</p>

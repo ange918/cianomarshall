@@ -1518,3 +1518,9 @@ button.tier-card__link {
   font-size: 0.9rem;
   text-align: center;
 }
+
+.donate__reason {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gray-dim);
+}
