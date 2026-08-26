@@ -10,10 +10,12 @@ export const NETWORKS = ['mtn', 'moov', 'celtiis'] as const
 export type Network = (typeof NETWORKS)[number]
 
 // Nom du réseau attendu par FeexPay dans le corps (champ « reseau »).
+// Valeurs tirées du mappage NETWORK_API_MAPPING (Bénin) du SDK officiel :
+// Celtiis Bénin doit être « CELTIIS BJ » (et non « CELTIIS »), sinon 502.
 const RESEAU_NAMES: Record<Network, string> = {
   mtn: 'MTN',
   moov: 'MOOV',
-  celtiis: 'CELTIIS',
+  celtiis: 'CELTIIS BJ',
 }
 export function reseauName(network: Network): string {
   return RESEAU_NAMES[network]

@@ -25,7 +25,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const upstream = await fetch(
       `${FEEXPAY_BASE}/api/transactions/getrequesttopay/integration/${encodeURIComponent(ref)}`,
-      { headers: { Authorization: `Bearer ${creds.apiKey}` } },
     )
     const raw = await upstream.text()
     let data: any = {}
