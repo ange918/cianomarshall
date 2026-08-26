@@ -26,13 +26,17 @@ export const AMOUNT_MAX = 2_000_000
 
 export type FeexPayCreds = { apiKey: string; shopId: string }
 
-// Lit les identifiants depuis l'environnement serveur. Renvoie null si absents.
-// Accepte FEEXPAY_API_KEY ou FEEXPAY_TOKEN pour la clé (noms interchangeables).
+// Identifiant de la boutique FeexPay. Public (il est de toute façon transmis
+// au navigateur par le SDK), donc défini ici : changer de boutique = changer
+// cette valeur, sans reconfigurer Vercel.
+export const SHOP_ID = 'MGk7Dv1POaTTuY5'
+
+// Lit la clé (secrète) depuis l'environnement serveur ; l'ID boutique vient
+// du code. Accepte FEEXPAY_API_KEY ou FEEXPAY_TOKEN (noms interchangeables).
 export function getCreds(): FeexPayCreds | null {
   const apiKey = process.env.FEEXPAY_API_KEY || process.env.FEEXPAY_TOKEN
-  const shopId = process.env.FEEXPAY_SHOP_ID
-  if (!apiKey || !shopId) return null
-  return { apiKey, shopId }
+  if (!apiKey) return null
+  return { apiKey, shopId: SHOP_ID }
 }
 
 export function authHeaders(apiKey: string) {
