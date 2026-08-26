@@ -1348,6 +1348,27 @@ button.tier-card__link {
   color: #0a0a0a;
 }
 
+/* Grille de montants dans la SECTION de dons (pas dans un modal). */
+.support__amounts {
+  justify-content: center;
+  max-width: 720px;
+  margin: 0 auto 1.6rem;
+}
+
+.support__amounts .donate__amount {
+  font-size: 0.95rem;
+  padding: 0.8rem 1.5rem;
+}
+
+.support__amounts .donate__amount:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.support .donate__secure {
+  text-align: center;
+}
+
 .donate__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

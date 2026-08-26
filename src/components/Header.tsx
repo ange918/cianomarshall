@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { NAV_LINKS } from '../data/content'
-import { openDonation } from '../lib/donate'
 import { navigateTo, smoothScrollTo } from '../lib/nav'
 import Logo from './Logo'
 
@@ -65,7 +64,7 @@ export default function Header() {
             className="btn btn--gold nav__cta"
             onClick={() => {
               closeMenu()
-              openDonation()
+              navigateTo('soutenir')
             }}
           >
             Faire un don
@@ -73,7 +72,11 @@ export default function Header() {
         </nav>
 
         <div className="header__actions">
-          <button type="button" className="btn btn--gold header__cta" onClick={() => openDonation()}>
+          <button
+            type="button"
+            className="btn btn--gold header__cta"
+            onClick={() => navigateTo('soutenir')}
+          >
             Soutenir / Faire un don
           </button>
           <button

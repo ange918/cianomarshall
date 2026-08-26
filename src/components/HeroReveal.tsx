@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import { SplitText } from 'gsap/SplitText'
-import { openDonation } from '../lib/donate'
 import { smoothScrollTo } from '../lib/nav'
 
 // Enregistrement des plugins + ease au niveau module (une seule fois).
@@ -257,7 +256,7 @@ export default function HeroReveal() {
             className="hero-reveal__cta"
             onClick={(e) => {
               e.preventDefault()
-              openDonation()
+              smoothScrollTo('soutenir')
             }}
           >
             Faire un don
