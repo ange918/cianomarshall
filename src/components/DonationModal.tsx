@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import { AMOUNT_MAX, AMOUNT_MIN, DONATION_PRESETS, FEEXPAY_LINK } from '../config/feexpay'
+import { DONATION_TIERS } from '../config/feexpay'
 import { DONATE_EVENT } from '../lib/donate'
 
 function formatXOF(n: number) {
@@ -9,15 +9,9 @@ function formatXOF(n: number) {
 
 export default function DonationModal() {
   const [open, setOpen] = useState(false)
-  const [amount, setAmount] = useState<number>(5000)
-  const [custom, setCustom] = useState('')
 
   useEffect(() => {
-    const onOpen = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { amount?: number } | undefined
-      if (detail?.amount) setAmount(detail.amount)
-      setOpen(true)
-    }
+    const onOpen = () => setOpen(true)
     window.addEventListener(DONATE_EVENT, onOpen)
     return () => window.removeEventListener(DONATE_EVENT, onOpen)
   }, [])
@@ -38,14 +32,9 @@ export default function DonationModal() {
   if (!open) return null
 
   const close = () => setOpen(false)
-  const effectiveAmount = custom ? Math.max(0, Math.round(Number(custom))) : amount
-  const amountValid = effectiveAmount >= AMOUNT_MIN && effectiveAmount <= AMOUNT_MAX
 
-  const pay = () => {
-    if (!amountValid) return
-    // Redirige vers la page de paiement FeexPay avec le montant choisi.
-    const url = `${FEEXPAY_LINK}?amount=${effectiveAmount}`
-    window.open(url, '_blank', 'noopener,noreferrer')
+  const pay = (link: string) => {
+    window.open(link, '_blank', 'noopener,noreferrer')
     close()
   }
 
@@ -60,46 +49,22 @@ export default function DonationModal() {
         <span className="donate__kicker">Faire un don</span>
         <h3 className="donate__title">Soutenez les AFA 2026</h3>
         <p className="donate__lead">
-          Choisissez votre montant. Vous serez redirigé vers la page de paiement sécurisée
-          FeexPay (Mobile Money ou carte bancaire).
+          Choisissez un montant. Vous serez redirigé vers la page de paiement sécurisée FeexPay
+          (Mobile Money ou carte bancaire), où vous validerez avec votre code.
         </p>
 
         <div className="donate__amounts">
-          {DONATION_PRESETS.map((preset) => (
+          {DONATION_TIERS.map((tier) => (
             <button
-              key={preset}
+              key={tier.amount}
               type="button"
-              className={`donate__amount ${!custom && amount === preset ? 'is-active' : ''}`}
-              onClick={() => {
-                setAmount(preset)
-                setCustom('')
-              }}
+              className="donate__amount"
+              onClick={() => pay(tier.link)}
             >
-              {formatXOF(preset)}
+              {formatXOF(tier.amount)}
             </button>
           ))}
         </div>
-
-        <label className="donate__field">
-          <span>Montant libre (FCFA)</span>
-          <input
-            type="number"
-            min={AMOUNT_MIN}
-            max={AMOUNT_MAX}
-            inputMode="numeric"
-            placeholder={`De ${AMOUNT_MIN} à ${AMOUNT_MAX}`}
-            value={custom}
-            onChange={(e) => setCustom(e.target.value)}
-          />
-        </label>
-
-        <button
-          className="btn btn--gold btn--lg donate__submit"
-          onClick={pay}
-          disabled={!amountValid}
-        >
-          {`Faire un don de ${formatXOF(amountValid ? effectiveAmount : 0)}`}
-        </button>
 
         <p className="donate__secure">Paiement sécurisé · FeexPay · XOF</p>
       </div>
