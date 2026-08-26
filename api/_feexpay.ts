@@ -12,8 +12,9 @@ export const AMOUNT_MAX = 2_000_000
 export type FeexPayCreds = { apiKey: string; shopId: string }
 
 // Lit les identifiants depuis l'environnement serveur. Renvoie null si absents.
+// Accepte FEEXPAY_API_KEY ou FEEXPAY_TOKEN pour la clé (noms interchangeables).
 export function getCreds(): FeexPayCreds | null {
-  const apiKey = process.env.FEEXPAY_API_KEY
+  const apiKey = process.env.FEEXPAY_API_KEY || process.env.FEEXPAY_TOKEN
   const shopId = process.env.FEEXPAY_SHOP_ID
   if (!apiKey || !shopId) return null
   return { apiKey, shopId }
