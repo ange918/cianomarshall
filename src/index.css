@@ -1524,3 +1524,54 @@ button.tier-card__link {
   font-size: 0.8rem;
   color: var(--gray-dim);
 }
+
+/* Sélecteur de réseau Mobile Money (modal de don) */
+.donate__networks {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.donate__network {
+  flex: 1;
+  min-width: 90px;
+  padding: 0.7rem 0.9rem;
+  background: var(--black);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--gray);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.donate__network:hover {
+  border-color: var(--line-strong);
+  color: var(--white);
+}
+
+.donate__network.is-active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #0a0a0a;
+}
+
+/* Spinner d'attente de confirmation */
+.donate__spinner {
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin: 1.4rem auto;
+  border: 3px solid var(--line);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: donate-spin 0.9s linear infinite;
+}
+
+@keyframes donate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

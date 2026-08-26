@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
-import { DONATION_PRESETS, FEEXPAY, isFeexPayConfigured } from '../config/feexpay'
-import { DONATE_EVENT, loadFeexPaySdk } from '../lib/donate'
+import { AMOUNT_MAX, AMOUNT_MIN, DONATION_PRESETS, NETWORKS, type NetworkId } from '../config/feexpay'
+import { DONATE_EVENT, getPaymentStatus, requestToPay } from '../lib/donate'
 
-type Status = 'form' | 'loading' | 'ready' | 'error' | 'success'
+type Status = 'form' | 'submitting' | 'pending' | 'success' | 'failed'
 
-const FEEX_CONTAINER = 'feexpay-container'
+const POLL_INTERVAL_MS = 4000
+const POLL_TIMEOUT_MS = 120000
 
 function formatXOF(n: number) {
   return new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
@@ -16,18 +17,25 @@ export default function DonationModal() {
   const [status, setStatus] = useState<Status>('form')
   const [amount, setAmount] = useState<number>(5000)
   const [custom, setCustom] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
+  const [network, setNetwork] = useState<NetworkId>('mtn')
   const [phone, setPhone] = useState('')
+  const [firstName, setFirstName] = useState('')
   const [reason, setReason] = useState('')
-  const containerRef = useRef<HTMLDivElement>(null)
+  const pollRef = useRef<number | null>(null)
+
+  const stopPolling = () => {
+    if (pollRef.current !== null) {
+      window.clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+  }
 
   // Ouverture depuis n'importe quel CTA « faire un don ».
   useEffect(() => {
     const onOpen = (e: Event) => {
       const detail = (e as CustomEvent).detail as { amount?: number } | undefined
       if (detail?.amount) setAmount(detail.amount)
+      setReason('')
       setStatus('form')
       setOpen(true)
     }
@@ -35,9 +43,12 @@ export default function DonationModal() {
     return () => window.removeEventListener(DONATE_EVENT, onOpen)
   }, [])
 
-  // Fermeture au clavier + blocage du scroll de fond.
+  // Fermeture au clavier + blocage du scroll + nettoyage du polling.
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      stopPolling()
+      return
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
     }
@@ -49,62 +60,68 @@ export default function DonationModal() {
     }
   }, [open])
 
+  useEffect(() => () => stopPolling(), [])
+
   const effectiveAmount = custom ? Math.max(0, Math.round(Number(custom))) : amount
+  const amountValid = effectiveAmount >= AMOUNT_MIN && effectiveAmount <= AMOUNT_MAX
+  const phoneValid = phone.replace(/\D/g, '').length >= 8
+
+  const startPolling = (reference: string) => {
+    const started = Date.now()
+    pollRef.current = window.setInterval(async () => {
+      try {
+        const { status: st, reason: rs } = await getPaymentStatus(reference)
+        if (st === 'SUCCESSFUL') {
+          stopPolling()
+          setStatus('success')
+        } else if (st === 'FAILED') {
+          stopPolling()
+          setReason(rs || 'Le paiement a échoué.')
+          setStatus('failed')
+        } else if (Date.now() - started > POLL_TIMEOUT_MS) {
+          stopPolling()
+          setReason('Délai dépassé. Si vous avez validé sur votre téléphone, réessayez la vérification.')
+          setStatus('failed')
+        }
+      } catch {
+        // Erreur réseau ponctuelle : on retente au tick suivant.
+      }
+    }, POLL_INTERVAL_MS)
+  }
 
   const handleSubmit = async () => {
-    if (!effectiveAmount || effectiveAmount < 100) return
-
-    // Diagnostic clair : quelles clés sont détectées dans ce build.
-    if (!isFeexPayConfigured()) {
-      const missing = [
-        !FEEXPAY.shopId && 'VITE_FEEXPAY_SHOP_ID',
-        !FEEXPAY.token && 'VITE_FEEXPAY_TOKEN',
-      ].filter(Boolean)
-      setReason(
-        `Clés FeexPay non détectées dans ce build (${missing.join(' + ')} vide). ` +
-          'Ajoutez-les dans Vercel pour l’environnement testé, puis redéployez.',
-      )
-      setStatus('error')
-      return
-    }
-
-    setStatus('loading')
+    if (!amountValid || !phoneValid) return
     setReason('')
+    setStatus('submitting')
     try {
-      await loadFeexPaySdk(FEEXPAY.sdkUrl)
-      if (!window.FeexPayButton || !containerRef.current) throw new Error('SDK FeexPay indisponible')
-      containerRef.current.innerHTML = ''
-      window.FeexPayButton.init(FEEX_CONTAINER, {
-        id: FEEXPAY.shopId,
-        token: FEEXPAY.token,
+      const { reference } = await requestToPay({
         amount: effectiveAmount,
-        description: FEEXPAY.description,
-        mode: FEEXPAY.mode,
-        currency: FEEXPAY.currency,
-        default_country: FEEXPAY.country,
-        custom_id: `afa-${Date.now()}`,
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        phone_number: phone,
-        callback_url: window.location.origin,
-        error_callback_url: window.location.origin,
-        callback: () => setStatus('success'),
+        network,
+        phoneNumber: phone,
+        firstName,
       })
-      setStatus('ready')
+      setStatus('pending')
+      startPolling(reference)
     } catch (err) {
-      setReason(err instanceof Error ? err.message : 'Échec du chargement de FeexPay.')
-      setStatus('error')
+      setReason(err instanceof Error ? err.message : 'Le paiement n’a pas pu être lancé.')
+      setStatus('failed')
     }
   }
 
   if (!open) return null
 
+  const close = () => setOpen(false)
+  const backToForm = () => {
+    stopPolling()
+    setReason('')
+    setStatus('form')
+  }
+
   return (
     <div className="donate" role="dialog" aria-modal="true" aria-label="Faire un don">
-      <div className="donate__overlay" onClick={() => setOpen(false)} />
+      <div className="donate__overlay" onClick={close} />
       <div className="donate__panel">
-        <button className="donate__close" aria-label="Fermer" onClick={() => setOpen(false)}>
+        <button className="donate__close" aria-label="Fermer" onClick={close}>
           <X size={18} strokeWidth={2} />
         </button>
 
@@ -113,11 +130,25 @@ export default function DonationModal() {
             <span className="donate__kicker">Merci</span>
             <h3 className="donate__title">Votre don est confirmé</h3>
             <p className="donate__lead">
-              Merci de soutenir l’audace africaine. Votre contribution fait vivre les
-              Africa Fashion Awards 2026.
+              Merci de soutenir l’audace africaine. Votre contribution fait vivre les Africa
+              Fashion Awards 2026.
             </p>
-            <button className="btn btn--gold" onClick={() => setOpen(false)}>
+            <button className="btn btn--gold" onClick={close}>
               Fermer
+            </button>
+          </div>
+        ) : status === 'pending' ? (
+          <div className="donate__done">
+            <span className="donate__kicker">En attente</span>
+            <h3 className="donate__title">Validez sur votre téléphone</h3>
+            <p className="donate__lead">
+              Une demande de paiement de <strong>{formatXOF(effectiveAmount)}</strong> a été
+              envoyée au <strong>{phone}</strong>. Confirmez avec votre code {network.toUpperCase()}
+              {' '}Mobile Money. Cette fenêtre se met à jour automatiquement.
+            </p>
+            <span className="donate__spinner" aria-hidden="true" />
+            <button className="btn btn--ghost" onClick={backToForm}>
+              Annuler
             </button>
           </div>
         ) : (
@@ -125,8 +156,8 @@ export default function DonationModal() {
             <span className="donate__kicker">Faire un don</span>
             <h3 className="donate__title">Soutenez les AFA 2026</h3>
             <p className="donate__lead">
-              Chaque contribution accompagne l’émergence des créateurs africains.
-              Paiement sécurisé par FeexPay (Mobile Money &amp; carte).
+              Paiement Mobile Money sécurisé par FeexPay. Choisissez un montant, votre réseau et
+              votre numéro.
             </p>
 
             <div className="donate__amounts">
@@ -149,61 +180,61 @@ export default function DonationModal() {
               <span>Montant libre (FCFA)</span>
               <input
                 type="number"
-                min={100}
+                min={AMOUNT_MIN}
+                max={AMOUNT_MAX}
                 inputMode="numeric"
-                placeholder="Autre montant"
+                placeholder={`De ${AMOUNT_MIN} à ${AMOUNT_MAX}`}
                 value={custom}
                 onChange={(e) => setCustom(e.target.value)}
               />
             </label>
 
+            <div className="donate__field">
+              <span>Réseau Mobile Money</span>
+              <div className="donate__networks">
+                {NETWORKS.map((n) => (
+                  <button
+                    key={n.id}
+                    type="button"
+                    className={`donate__network ${network === n.id ? 'is-active' : ''}`}
+                    onClick={() => setNetwork(n.id)}
+                  >
+                    {n.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="donate__grid">
               <label className="donate__field">
-                <span>Prénom</span>
-                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-              </label>
-              <label className="donate__field">
-                <span>Nom</span>
-                <input value={lastName} onChange={(e) => setLastName(e.target.value)} />
-              </label>
-              <label className="donate__field">
-                <span>Email</span>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </label>
-              <label className="donate__field">
-                <span>Téléphone</span>
+                <span>Téléphone (Mobile Money)</span>
                 <input
                   type="tel"
-                  placeholder="+229 …"
+                  placeholder="+229 01 …"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
+              </label>
+              <label className="donate__field">
+                <span>Prénom (optionnel)</span>
+                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
               </label>
             </div>
 
             <button
               className="btn btn--gold btn--lg donate__submit"
               onClick={handleSubmit}
-              disabled={status === 'loading' || !effectiveAmount || effectiveAmount < 100}
+              disabled={status === 'submitting' || !amountValid || !phoneValid}
             >
-              {status === 'loading'
-                ? 'Chargement…'
-                : `Faire un don de ${formatXOF(effectiveAmount || 0)}`}
+              {status === 'submitting'
+                ? 'Envoi en cours…'
+                : `Faire un don de ${formatXOF(amountValid ? effectiveAmount : 0)}`}
             </button>
 
-            {/* Conteneur du bouton de paiement rendu par le SDK FeexPay. */}
-            <div id={FEEX_CONTAINER} ref={containerRef} className="donate__feex" />
-
-            {status === 'ready' && (
-              <p className="donate__hint">
-                Cliquez sur le bouton FeexPay ci-dessus pour finaliser votre paiement.
-              </p>
-            )}
-
-            {status === 'error' && (
+            {status === 'failed' && reason && (
               <div className="donate__notice">
-                <p>Le paiement en ligne n’est pas encore disponible.</p>
-                {reason && <p className="donate__reason">{reason}</p>}
+                <p>Le paiement n’a pas abouti.</p>
+                <p className="donate__reason">{reason}</p>
               </div>
             )}
 
