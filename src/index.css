@@ -1508,3 +1508,19 @@ button.tier-card__link {
 .curtain__row--bottom .curtain__block {
   transform-origin: bottom;
 }
+
+.donate__notice {
+  margin-top: 1rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--gray);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.donate__reason {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gray-dim);
+}

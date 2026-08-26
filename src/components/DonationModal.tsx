@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Smartphone, Mail, X } from 'lucide-react'
-import { CONTACT } from '../data/content'
+import { X } from 'lucide-react'
 import { DONATION_PRESETS, FEEXPAY, isFeexPayConfigured } from '../config/feexpay'
 import { DONATE_EVENT, loadFeexPaySdk } from '../lib/donate'
 
@@ -21,6 +20,7 @@ export default function DonationModal() {
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [reason, setReason] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Ouverture depuis n'importe quel CTA « faire un don ».
@@ -54,15 +54,25 @@ export default function DonationModal() {
   const handleSubmit = async () => {
     if (!effectiveAmount || effectiveAmount < 100) return
 
+    // Diagnostic clair : quelles clés sont détectées dans ce build.
     if (!isFeexPayConfigured()) {
+      const missing = [
+        !FEEXPAY.shopId && 'VITE_FEEXPAY_SHOP_ID',
+        !FEEXPAY.token && 'VITE_FEEXPAY_TOKEN',
+      ].filter(Boolean)
+      setReason(
+        `Clés FeexPay non détectées dans ce build (${missing.join(' + ')} vide). ` +
+          'Ajoutez-les dans Vercel pour l’environnement testé, puis redéployez.',
+      )
       setStatus('error')
       return
     }
 
     setStatus('loading')
+    setReason('')
     try {
       await loadFeexPaySdk(FEEXPAY.sdkUrl)
-      if (!window.FeexPayButton || !containerRef.current) throw new Error('SDK indisponible')
+      if (!window.FeexPayButton || !containerRef.current) throw new Error('SDK FeexPay indisponible')
       containerRef.current.innerHTML = ''
       window.FeexPayButton.init(FEEX_CONTAINER, {
         id: FEEXPAY.shopId,
@@ -82,7 +92,8 @@ export default function DonationModal() {
         callback: () => setStatus('success'),
       })
       setStatus('ready')
-    } catch {
+    } catch (err) {
+      setReason(err instanceof Error ? err.message : 'Échec du chargement de FeexPay.')
       setStatus('error')
     }
   }
@@ -170,52 +181,30 @@ export default function DonationModal() {
               </label>
             </div>
 
-            {status === 'error' ? (
-              <div className="donate__fallback">
-                <p>
-                  Le paiement en ligne n’est pas encore activé. Contactez-nous directement
-                  pour finaliser votre don&nbsp;:
-                </p>
-                <div className="donate__fallback-actions">
-                  <a href={CONTACT.phoneHref} className="action-btn">
-                    <span className="action-btn__icon" aria-hidden="true">
-                      <Smartphone size={22} strokeWidth={1.75} />
-                    </span>
-                    <span className="action-btn__body">
-                      <span className="action-btn__title">Mobile Money</span>
-                      <span className="action-btn__value">{CONTACT.phone}</span>
-                    </span>
-                  </a>
-                  <a href={CONTACT.emailHref} className="action-btn">
-                    <span className="action-btn__icon" aria-hidden="true">
-                      <Mail size={22} strokeWidth={1.75} />
-                    </span>
-                    <span className="action-btn__body">
-                      <span className="action-btn__title">Email</span>
-                      <span className="action-btn__value">{CONTACT.email}</span>
-                    </span>
-                  </a>
-                </div>
+            <button
+              className="btn btn--gold btn--lg donate__submit"
+              onClick={handleSubmit}
+              disabled={status === 'loading' || !effectiveAmount || effectiveAmount < 100}
+            >
+              {status === 'loading'
+                ? 'Chargement…'
+                : `Faire un don de ${formatXOF(effectiveAmount || 0)}`}
+            </button>
+
+            {/* Conteneur du bouton de paiement rendu par le SDK FeexPay. */}
+            <div id={FEEX_CONTAINER} ref={containerRef} className="donate__feex" />
+
+            {status === 'ready' && (
+              <p className="donate__hint">
+                Cliquez sur le bouton FeexPay ci-dessus pour finaliser votre paiement.
+              </p>
+            )}
+
+            {status === 'error' && (
+              <div className="donate__notice">
+                <p>Le paiement en ligne n’est pas encore disponible.</p>
+                {reason && <p className="donate__reason">{reason}</p>}
               </div>
-            ) : (
-              <>
-                <button
-                  className="btn btn--gold btn--lg donate__submit"
-                  onClick={handleSubmit}
-                  disabled={status === 'loading' || !effectiveAmount || effectiveAmount < 100}
-                >
-                  {status === 'loading'
-                    ? 'Chargement…'
-                    : `Faire un don de ${formatXOF(effectiveAmount || 0)}`}
-                </button>
-                {/* Conteneur du bouton de paiement rendu par le SDK FeexPay. */}
-                <div id={FEEX_CONTAINER} ref={containerRef} className="donate__feex" />
-                {status === 'ready' && (
-                  <p className="donate__hint">
-                    Cliquez sur le bouton FeexPay ci-dessus pour finaliser votre paiement.
-                  </p>
-                )}
-              </>
             )}
 
             <p className="donate__secure">Paiement sécurisé · FeexPay · XOF</p>
