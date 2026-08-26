@@ -12,13 +12,11 @@ export type RequestToPayInput = {
   amount: number
   network: NetworkId
   phoneNumber: string
-  firstName?: string
-  lastName?: string
 }
 
 export type PaymentStatus = 'PENDING' | 'SUCCESSFUL' | 'FAILED'
 
-// Lance une demande de paiement via notre fonction serverless.
+// Lance une demande de paiement via notre fonction serverless (API FeexPay v2).
 export async function requestToPay(
   input: RequestToPayInput,
 ): Promise<{ reference: string; status: PaymentStatus }> {
