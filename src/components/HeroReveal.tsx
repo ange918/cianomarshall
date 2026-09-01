@@ -266,19 +266,10 @@ export default function HeroReveal() {
           <img src="/red-carpet.jpg" alt="Tapis rouge — Africa Fashion Awards" />
         </div>
         <div className="card">
-          <h1>Soutenez les Africa Fashion Awards</h1>
           <p className="card__edition">7ᵉ édition</p>
+          <h1>Soutenez AFA&nbsp;26</h1>
         </div>
         <footer>
-          <a
-            href="#evenement"
-            onClick={(e) => {
-              e.preventDefault()
-              smoothScrollTo('evenement')
-            }}
-          >
-            Défiler vers le bas
-          </a>
           <p>Africa Fashion Awards 2026 · 7ᵉ édition</p>
         </footer>
       </div>
