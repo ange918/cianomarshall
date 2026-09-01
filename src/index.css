@@ -1139,12 +1139,23 @@ ol {
   opacity: 0.65;
 }
 
-/* Carte centrale « Faites un don » cliquable → section dons. */
-.hero-reveal .card a {
-  color: inherit;
-  text-decoration: none;
-  display: inline-block;
-  cursor: pointer;
+/* Carte centrale : tagline « Soutenez les Africa Fashion Awards ». */
+.hero-reveal .card {
+  text-align: center;
+  padding: 0 1.2rem;
+}
+
+.hero-reveal .card h1 {
+  font-size: clamp(1.6rem, 5vw, 3rem);
+  line-height: 1.12;
+}
+
+.hero-reveal .card .card__edition {
+  margin-top: 0.9rem;
+  color: #d4af37;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
 }
 
 .hero-reveal footer p {
