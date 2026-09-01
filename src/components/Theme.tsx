@@ -1,4 +1,5 @@
 import { AUDACE_PILLARS } from '../data/content'
+import DonateCta from './DonateCta'
 
 export default function Theme() {
   return (
@@ -33,6 +34,8 @@ export default function Theme() {
           <li>Créer un moment mémorable.</li>
           <li>Attirer l’attention des médias.</li>
         </ul>
+
+        <DonateCta hint="Soutenez l’audace créative africaine." />
       </div>
     </section>
   )

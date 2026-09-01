@@ -138,6 +138,23 @@ ol {
   border-color: var(--white);
 }
 
+/* Appel à l'action « Faire un don » en fin de section. */
+.section__cta {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.section__cta-hint {
+  max-width: 34ch;
+  color: var(--muted, #9a9a9a);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 /* ---------- Header ---------- */
 .header {
   position: fixed;

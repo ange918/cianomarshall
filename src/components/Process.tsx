@@ -1,4 +1,5 @@
 import { PROCESS_STEPS } from '../data/content'
+import DonateCta from './DonateCta'
 
 export default function Process() {
   return (
@@ -20,6 +21,8 @@ export default function Process() {
             </li>
           ))}
         </ol>
+
+        <DonateCta hint="Faites partie de l’aventure — soutenez les AFA." />
       </div>
     </section>
   )
