@@ -250,7 +250,7 @@ export default function HeroReveal() {
 
       <div className="container">
         <nav>
-          <p id="logo">A26</p>
+          <p id="logo">AFA26</p>
           <a
             href="#soutenir"
             className="hero-reveal__cta"
@@ -263,10 +263,18 @@ export default function HeroReveal() {
           </a>
         </nav>
         <div className="hero-img">
-          <img src="/hero.svg" alt="Ambiance éditoriale Africa Fashion Awards" />
+          <img src="/red-carpet.jpg" alt="Tapis rouge — Africa Fashion Awards" />
         </div>
         <div className="card">
-          <h1>Audace</h1>
+          <a
+            href="#soutenir"
+            onClick={(e) => {
+              e.preventDefault()
+              smoothScrollTo('soutenir')
+            }}
+          >
+            <h1>Faites un don</h1>
+          </a>
         </div>
         <footer>
           <a
@@ -276,9 +284,9 @@ export default function HeroReveal() {
               smoothScrollTo('evenement')
             }}
           >
-            Scroll Down
+            Défiler vers le bas
           </a>
-          <p>Africa Fashion Awards 2026</p>
+          <p>Africa Fashion Awards 2026 · 7ᵉ édition</p>
         </footer>
       </div>
     </div>

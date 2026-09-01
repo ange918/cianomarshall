@@ -1139,6 +1139,14 @@ ol {
   opacity: 0.65;
 }
 
+/* Carte centrale « Faites un don » cliquable → section dons. */
+.hero-reveal .card a {
+  color: inherit;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+}
+
 .hero-reveal footer p {
   color: #fff;
 }
