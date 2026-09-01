@@ -45,7 +45,7 @@ export default function HeroReveal() {
           })
         }
 
-        splitTextElements('.intro-title h1', 'words, chars', true)
+        splitTextElements('.intro-title h1', 'words, chars', false)
         splitTextElements('.outro-title h1')
         splitTextElements('.tag p', 'words')
         splitTextElements('.card h1', 'words, chars', true)
@@ -67,9 +67,9 @@ export default function HeroReveal() {
           scale: 0.75,
         })
         gsap.set('.split-overlay .outro-title .char', {
-          x: isMobile ? '-3rem' : '-8rem',
-          fontSize: isMobile ? '6rem' : '14rem',
-          fontWeight: '500',
+          x: '-10rem',
+          fontSize: isMobile ? '3rem' : '8rem',
+          fontWeight: '600',
         })
 
         const tags = gsap.utils.toArray<HTMLElement>('.tag')
@@ -113,7 +113,7 @@ export default function HeroReveal() {
         )
         tl.to(
           '.preloader .outro-title .char',
-          { x: isMobile ? '-3rem' : '-8rem', duration: 1 },
+          { x: '-10rem', duration: 1 },
           3.5,
         )
 
@@ -132,9 +132,9 @@ export default function HeroReveal() {
         tl.to(
           '.preloader .outro-title .char',
           {
-            x: isMobile ? '-3rem' : '-8rem',
-            fontSize: isMobile ? '6rem' : '14rem',
-            fontWeight: '500',
+            x: '-10rem',
+            fontSize: isMobile ? '3rem' : '8rem',
+            fontWeight: '600',
             duration: 0.75,
             onComplete: () => {
               // Échange invisible : les deux calques deviennent chacun une moitié.
@@ -223,7 +223,7 @@ export default function HeroReveal() {
           <h1>Africa Fashion Awards</h1>
         </div>
         <div className="outro-title">
-          <h1>26</h1>
+          <h1>AFA26</h1>
         </div>
       </div>
 
@@ -232,7 +232,7 @@ export default function HeroReveal() {
           <h1>Africa Fashion Awards</h1>
         </div>
         <div className="outro-title">
-          <h1>26</h1>
+          <h1>AFA26</h1>
         </div>
       </div>
 
@@ -266,26 +266,19 @@ export default function HeroReveal() {
           <img src="/red-carpet.jpg" alt="Tapis rouge — Africa Fashion Awards" />
         </div>
         <div className="card">
+          <h1>Soutenez la 7ᵉ édition des Africa Fashion Awards</h1>
           <a
             href="#soutenir"
+            className="btn btn--gold btn--lg card__cta"
             onClick={(e) => {
               e.preventDefault()
               smoothScrollTo('soutenir')
             }}
           >
-            <h1>Faites un don</h1>
+            Faire un don
           </a>
         </div>
         <footer>
-          <a
-            href="#evenement"
-            onClick={(e) => {
-              e.preventDefault()
-              smoothScrollTo('evenement')
-            }}
-          >
-            Défiler vers le bas
-          </a>
           <p>Africa Fashion Awards 2026 · 7ᵉ édition</p>
         </footer>
       </div>

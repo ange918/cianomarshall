@@ -1,5 +1,6 @@
 import { TrendingUp, Newspaper, Sparkles, Scissors, Users } from 'lucide-react'
 import { ADVANTAGES, IMPACTS } from '../data/content'
+import DonateCta from './DonateCta'
 
 const IMPACT_ICONS = [TrendingUp, Newspaper, Sparkles]
 const ADVANTAGE_ICONS = [Scissors, Users]
@@ -52,6 +53,8 @@ export default function Impact() {
             )
           })}
         </div>
+
+        <DonateCta hint="Amplifiez ce rayonnement — devenez donateur." />
       </div>
     </section>
   )

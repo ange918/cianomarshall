@@ -1,4 +1,5 @@
 import { EVENT } from '../data/content'
+import DonateCta from './DonateCta'
 
 const HONORED = [
   'Stylistes',
@@ -46,7 +47,7 @@ export default function About() {
 
           <aside className="about__stats" aria-label="Chiffres clés">
             <div className="stat-card">
-              <span className="stat-card__num">6<sup>e</sup></span>
+              <span className="stat-card__num">7<sup>e</sup></span>
               <span className="stat-card__label">Édition 2026</span>
             </div>
             <div className="stat-card">
@@ -59,6 +60,8 @@ export default function About() {
             </div>
           </aside>
         </div>
+
+        <DonateCta hint="Chaque don accompagne l’émergence des créateurs africains." />
       </div>
     </section>
   )

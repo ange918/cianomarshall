@@ -2,7 +2,7 @@
 
 ## Overview
 
-Landing page de la 6ème édition des Africa Fashion Awards (AFA 2026), dont la
+Landing page de la 7ème édition des Africa Fashion Awards (AFA 2026), dont la
 thématique artistique est « L'Ère des Audacieux ». Le site présente l'événement,
 valorise la vision portée par Gauthier ORE et Royal Fashion Event, et incite le
 public, les mécènes et les entreprises à soutenir financièrement l'événement
