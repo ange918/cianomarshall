@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { NAV_LINKS } from '../data/content'
-import { openDonation } from '../lib/donate'
 import { navigateTo, smoothScrollTo } from '../lib/nav'
 import Logo from './Logo'
 
@@ -8,7 +7,6 @@ const routeId = (href: string) => href.replace(/^#/, '')
 
 export default function Header() {
   const [revealed, setRevealed] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     // Le header reste masqué pendant l'intro plein écran, puis apparaît
@@ -23,8 +21,6 @@ export default function Header() {
     }
   }, [])
 
-  const closeMenu = () => setMenuOpen(false)
-
   return (
     <header className={`header header--scrolled ${revealed ? '' : 'header--hidden'}`}>
       <div className="header__inner">
@@ -33,7 +29,6 @@ export default function Header() {
           className="brand"
           onClick={(e) => {
             e.preventDefault()
-            closeMenu()
             smoothScrollTo('accueil')
           }}
           aria-label="Africa Fashion Awards — Accueil"
@@ -45,7 +40,7 @@ export default function Header() {
           </span>
         </a>
 
-        <nav className={`nav ${menuOpen ? 'nav--open' : ''}`} aria-label="Navigation principale">
+        <nav className="nav" aria-label="Navigation principale">
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
@@ -53,39 +48,21 @@ export default function Header() {
               className="nav__link"
               onClick={(e) => {
                 e.preventDefault()
-                closeMenu()
                 navigateTo(routeId(link.href))
               }}
             >
               {link.label}
             </a>
           ))}
-          <button
-            type="button"
-            className="btn btn--gold nav__cta"
-            onClick={() => {
-              closeMenu()
-              openDonation()
-            }}
-          >
-            Faire un don
-          </button>
         </nav>
 
         <div className="header__actions">
-          <button type="button" className="btn btn--gold header__cta" onClick={() => openDonation()}>
-            Soutenir / Faire un don
-          </button>
           <button
             type="button"
-            className={`burger ${menuOpen ? 'burger--open' : ''}`}
-            aria-label="Ouvrir le menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
+            className="btn btn--gold header__cta"
+            onClick={() => navigateTo('soutenir')}
           >
-            <span />
-            <span />
-            <span />
+            Faire un don
           </button>
         </div>
       </div>

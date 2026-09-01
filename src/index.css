@@ -1139,6 +1139,14 @@ ol {
   opacity: 0.65;
 }
 
+/* Carte centrale « Faites un don » cliquable → section dons. */
+.hero-reveal .card a {
+  color: inherit;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+}
+
 .hero-reveal footer p {
   color: #fff;
 }
@@ -1346,6 +1354,27 @@ button.tier-card__link {
   background: var(--gold);
   border-color: var(--gold);
   color: #0a0a0a;
+}
+
+/* Grille de montants dans la SECTION de dons (pas dans un modal). */
+.support__amounts {
+  justify-content: center;
+  max-width: 720px;
+  margin: 0 auto 1.6rem;
+}
+
+.support__amounts .donate__amount {
+  font-size: 0.95rem;
+  padding: 0.8rem 1.5rem;
+}
+
+.support__amounts .donate__amount:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.support .donate__secure {
+  text-align: center;
 }
 
 .donate__grid {

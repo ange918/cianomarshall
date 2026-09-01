@@ -10,7 +10,7 @@ export const CONTACT = {
 } as const
 
 export const EVENT = {
-  edition: '6ème édition',
+  edition: '7ème édition',
   title: 'Africa Fashion Awards 2026',
   theme: 'L’Ère des Audacieux',
   date: '15 Novembre 2026',
