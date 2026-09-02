@@ -49,14 +49,17 @@ export default function About() {
             <div className="stat-card">
               <span className="stat-card__num">7<sup>e</sup></span>
               <span className="stat-card__label">Édition 2026</span>
+              <span className="stat-card__hint">L’Ère des Audacieux · Le 15 novembre</span>
             </div>
             <div className="stat-card">
               <span className="stat-card__num">15 Nov.</span>
               <span className="stat-card__label">Grande soirée &amp; Tapis Rouge</span>
+              <span className="stat-card__hint">Une cérémonie prestige à Cotonou</span>
             </div>
             <div className="stat-card">
               <span className="stat-card__num">5+</span>
               <span className="stat-card__label">Corps de métier récompensés</span>
+              <span className="stat-card__hint">Stylistes, mannequins, photographes, maquilleurs, influenceurs</span>
             </div>
           </aside>
         </div>

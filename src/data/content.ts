@@ -18,6 +18,19 @@ export const EVENT = {
   founder: 'Gauthier ORE',
 } as const
 
+// Bandeau « ils soutiennent l'audace ».
+// ⚠️ Noms d'exemple — à remplacer par les vrais partenaires / médias.
+export const PARTNERS: string[] = [
+  'Royal Fashion Event',
+  'Cotonou Mode',
+  'Studio Lumière',
+  'Afrique Créative',
+  'Vogue Bénin',
+  'Maison Éclat',
+  'Tapis Rouge Média',
+  'Élégance 229',
+]
+
 export type NavLink = { label: string; href: string }
 
 export const NAV_LINKS: NavLink[] = [

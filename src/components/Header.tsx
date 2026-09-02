@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ArrowUpRight } from 'lucide-react'
 import { NAV_LINKS } from '../data/content'
 import { navigateTo, smoothScrollTo } from '../lib/nav'
 import Logo from './Logo'
@@ -33,9 +34,11 @@ export default function Header() {
           }}
           aria-label="Africa Fashion Awards — Accueil"
         >
-          <Logo className="brand__logo" />
+          <span className="brand__logo-ring">
+            <Logo />
+          </span>
           <span className="brand__text">
-            <span className="brand__mark">AFA</span>
+            <span className="brand__mark">Africa Fashion Awards</span>
             <span className="brand__sub">Royal Fashion Event</span>
           </span>
         </a>
@@ -63,6 +66,7 @@ export default function Header() {
             onClick={() => navigateTo('soutenir')}
           >
             Faire un don
+            <ArrowUpRight aria-hidden="true" />
           </button>
         </div>
       </div>
