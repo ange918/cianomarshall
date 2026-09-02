@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import { SplitText } from 'gsap/SplitText'
-import { ArrowUpRight, ArrowDown, Sparkles } from 'lucide-react'
+import { ArrowUpRight, ArrowDown } from 'lucide-react'
 import { smoothScrollTo } from '../lib/nav'
 
 // Enregistrement des plugins + ease au niveau module (une seule fois).
@@ -267,10 +267,6 @@ export default function HeroReveal() {
           <img src="/red-carpet.jpg" alt="Tapis rouge — Africa Fashion Awards" />
         </div>
         <div className="card">
-          <p className="hero-badge">
-            <Sparkles aria-hidden="true" />
-            Africa Fashion Awards · Cotonou · 15 Nov 2026
-          </p>
           <h1>Soutenez la 7ᵉ édition des Africa Fashion Awards</h1>
           <div className="card__actions">
             <a

@@ -120,8 +120,10 @@ ol {
 }
 
 .btn svg {
-  width: 1em;
-  height: 1em;
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+  stroke-width: 2.25;
 }
 
 .btn:hover {
@@ -1971,29 +1973,6 @@ button.tier-card__link {
   color: var(--gold);
 }
 
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: rgba(10, 10, 10, 0.55);
-  backdrop-filter: blur(6px);
-  font-family: var(--font);
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--white);
-}
-
-.hero-badge svg {
-  width: 14px;
-  height: 14px;
-  color: var(--gold);
-}
-
 .hero-reveal .card__actions {
   display: flex;
   align-items: center;
@@ -2021,8 +2000,10 @@ button.tier-card__link {
 }
 
 .hero-reveal .card__link svg {
-  width: 1em;
-  height: 1em;
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+  stroke-width: 2.25;
 }
 
 /* --- Divers cartes : coins plus doux, hover cohérent --- */
