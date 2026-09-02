@@ -18,17 +18,27 @@ export const EVENT = {
   founder: 'Gauthier ORE',
 } as const
 
-// Bandeau « ils soutiennent l'audace ».
-// ⚠️ Noms d'exemple — à remplacer par les vrais partenaires / médias.
+// Bandeau « ils soutiennent l'audace » — partenaires officiels.
 export const PARTNERS: string[] = [
-  'Royal Fashion Event',
-  'Cotonou Mode',
-  'Studio Lumière',
-  'Afrique Créative',
-  'Vogue Bénin',
-  'Maison Éclat',
-  'Tapis Rouge Média',
-  'Élégance 229',
+  'Adjia',
+  'One Touch',
+  'AT',
+  'Magik Golden',
+  'Senan Concept',
+  'Raim Bénin',
+  'Sejeps Feli’x',
+  '2 L’Or Event',
+  'Susuni Lab',
+  'Akanda & Fils',
+  'Dahomey Tech',
+  'DD Style Africa',
+  'Tekof Promo Mode',
+  'Cogito Arts',
+  'ONG C-DACS',
+  'Max 229',
+  'Clean Ride',
+  'CC Style',
+  'Sin Nunu',
 ]
 
 export type NavLink = { label: string; href: string }
