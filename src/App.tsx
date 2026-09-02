@@ -6,12 +6,14 @@ import Lenis from 'lenis'
 
 import Header from './components/Header'
 import HeroReveal from './components/HeroReveal'
+import TrustMarquee from './components/TrustMarquee'
 import About from './components/About'
 import Theme from './components/Theme'
 import Impact from './components/Impact'
 import Process from './components/Process'
 import Support from './components/Support'
 import Footer from './components/Footer'
+import FloatingContact from './components/FloatingContact'
 import PageCurtain from './components/PageCurtain'
 import { initCopy } from './lib/copyReveal'
 import { setLenis } from './lib/nav'
@@ -72,6 +74,7 @@ export default function App() {
       <Header />
       <main ref={rootRef}>
         <HeroReveal />
+        <TrustMarquee />
         <About />
         <Theme />
         <Impact />
@@ -79,6 +82,7 @@ export default function App() {
         <Support />
       </main>
       <Footer />
+      <FloatingContact />
       <PageCurtain />
     </>
   )
