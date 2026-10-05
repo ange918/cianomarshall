@@ -24,3 +24,6 @@ dist-ssr
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Demandes d'accréditation (persistées localement)
+data/accreditations.json

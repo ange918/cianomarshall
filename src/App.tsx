@@ -15,22 +15,25 @@ import Support from './components/Support'
 import Footer from './components/Footer'
 import FloatingContact from './components/FloatingContact'
 import PageCurtain from './components/PageCurtain'
+import AccreditationPage from './pages/AccreditationPage'
+import AccreditationConfirm from './pages/AccreditationConfirm'
+import AccreditationStatus from './pages/AccreditationStatus'
+import AdminApp from './pages/admin/AdminApp'
 import { initCopy } from './lib/copyReveal'
-import { setLenis } from './lib/nav'
+import { setLenis, smoothScrollTo } from './lib/nav'
+import { usePathname } from './lib/router'
 
 gsap.registerPlugin(SplitText, ScrollTrigger)
 
-// Éléments dont le texte se révèle ligne par ligne.
 const COPY_SELECTOR = '.section__title, .section__intro'
 
-export default function App() {
+function Landing() {
   const rootRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     let cancelled = false
     const splits: SplitText[] = []
 
-    // Scroll fluide (Lenis) piloté par le ticker GSAP — une seule instance.
     const lenis = new Lenis()
     setLenis(lenis)
     lenis.on('scroll', ScrollTrigger.update)
@@ -43,7 +46,6 @@ export default function App() {
       self = ctxSelf
     }, rootRef)
 
-    // Attendre le chargement des polices pour un découpage de lignes correct.
     document.fonts.ready.then(() => {
       if (cancelled || !rootRef.current) return
       self.add(() => {
@@ -51,13 +53,15 @@ export default function App() {
         root.querySelectorAll<HTMLElement>(COPY_SELECTOR).forEach((el) => {
           splits.push(...initCopy(el))
         })
-        // Les paragraphes « À propos » se révèlent en cascade continue.
         root.querySelectorAll<HTMLElement>('.about__text').forEach((el) => {
           el.setAttribute('data-copy-wrapper', 'true')
           splits.push(...initCopy(el))
         })
       })
     })
+
+    const hash = window.location.hash.replace('#', '')
+    if (hash) window.setTimeout(() => smoothScrollTo(hash), 600)
 
     return () => {
       cancelled = true
@@ -86,4 +90,13 @@ export default function App() {
       <PageCurtain />
     </>
   )
+}
+
+export default function App() {
+  const path = usePathname()
+  if (path.startsWith('/admin')) return <AdminApp />
+  if (path.startsWith('/accreditation/confirmation')) return <AccreditationConfirm />
+  if (path.startsWith('/accreditation/statut')) return <AccreditationStatus />
+  if (path.startsWith('/accreditation')) return <AccreditationPage />
+  return <Landing />
 }
