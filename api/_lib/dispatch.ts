@@ -267,7 +267,7 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
           item.history.push(entry)
           item.updatedAt = entry.at
         }
-        const linkOk = await probeLink(item.mediaLink)
+        const linkOk = await probeLink(item.mediaLink || '')
         return {
           item: snapshot({ seq: data.seq, pressCapacity: data.pressCapacity, items: [item] }).items[0],
           controls: {

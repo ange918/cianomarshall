@@ -14,10 +14,9 @@ import {
   COVERAGE_TYPES,
   ENGAGEMENT_17,
   ENGAGEMENT_18,
-  GEAR_TYPES,
-  INTERVIEW_ANSWERS,
   MEDIA_TYPES,
   PEOPLE_TYPES,
+  QUESTION_COUNT,
   SECTIONS,
   TEAM_NOTE,
   TEAM_SIZES,
@@ -138,7 +137,7 @@ export default function AccreditationPage() {
       if (raw) {
         const draft = JSON.parse(raw) as { values?: FormValues; step?: number }
         if (draft.values) setValues({ ...emptyForm(), ...draft.values })
-        if (draft.step) setStep(draft.step)
+        if (draft.step) setStep(Math.min(Math.max(1, draft.step), SECTIONS.length))
         setDraftSaved(true)
       }
     } catch {
@@ -183,8 +182,8 @@ export default function AccreditationPage() {
     })
   }
 
-  const showInterviews = values.interviews === 'Oui' || values.interviews === 'À confirmer'
   const stepErrorCount = useMemo(() => Object.keys(sectionErrors(values, step)).length, [values, step])
+  const sectionCount = SECTIONS.length
 
   const goStep = (next: number) => {
     if (next > step) {
@@ -216,7 +215,7 @@ export default function AccreditationPage() {
     try {
       const result = await api<Confirmation>('/api/accreditations', {
         method: 'POST',
-        body: JSON.stringify(values),
+        body: JSON.stringify(submissionPayload(values)),
       })
       const confirmation: Confirmation = {
         reference: result.reference,
@@ -351,9 +350,9 @@ export default function AccreditationPage() {
             noValidate
           >
             <div className="form-card__top">
-              <span className="label-xs">Formulaire d’accréditation · 18 questions</span>
+              <span className="label-xs">Formulaire d’accréditation · {QUESTION_COUNT} questions</span>
               <div className="form-progress">
-                Section {currentSection} / 6
+                Section {currentSection} / {sectionCount}
                 {SECTIONS.map((section) => (
                   <i key={section.id} className={section.id <= currentSection ? 'on' : ''} />
                 ))}
@@ -364,11 +363,11 @@ export default function AccreditationPage() {
               <div>
                 <b>{SECTIONS[step - 1]?.title}</b>
                 <span>
-                  {step} / 6
+                  {step} / {sectionCount}
                 </span>
               </div>
               <div className="acc-bar">
-                <i style={{ width: `${(step / 6) * 100}%` }} />
+                <i style={{ width: `${(step / sectionCount) * 100}%` }} />
               </div>
             </div>
 
@@ -426,10 +425,7 @@ export default function AccreditationPage() {
                     />
                   ) : null}
                 </Field>
-                <Field n={8} label="Lien média / site / page pro" required error={errors.mediaLink} full>
-                  <input className={`input${errors.mediaLink ? ' is-error' : ''}`} value={values.mediaLink} placeholder="https://…" onChange={(e) => set('mediaLink', e.target.value)} />
-                </Field>
-                <Field n={9} label="Liens réseaux sociaux pro" full>
+                <Field n={8} label="Liens réseaux sociaux pro" full>
                   <textarea className="input textarea" value={values.socialLinks} placeholder={'Un lien par ligne (Instagram, TikTok, Facebook, YouTube…)'} onChange={(e) => set('socialLinks', e.target.value)} />
                 </Field>
               </div>
@@ -442,20 +438,12 @@ export default function AccreditationPage() {
                 <span className="fs__hint">Ce que vous prévoyez de couvrir</span>
               </div>
               <div className="fgrid">
-                <Field n={10} label="Type(s) de couverture" hint="plusieurs choix possibles" full>
+                <Field n={9} label="Type(s) de couverture" hint="plusieurs choix possibles" full>
                   <Choices options={COVERAGE_TYPES} value={values.coverageTypes} multiple onChange={(next) => set('coverageTypes', next as string[])} />
                 </Field>
-                <Field n={11} label="Projet de couverture" required error={errors.coverageProject} full>
-                  <textarea className={`input textarea${errors.coverageProject ? ' is-error' : ''}`} value={values.coverageProject} placeholder="Décrivez votre angle, vos formats et vos dates de publication…" onChange={(e) => set('coverageProject', e.target.value)} />
+                <Field n={10} label="Quels types de personnes prévoyez-vous d’interviewer ?" hint="plusieurs choix possibles" full>
+                  <Choices options={PEOPLE_TYPES} value={values.interviewPeople} multiple onChange={(next) => set('interviewPeople', next as string[])} />
                 </Field>
-                <Field n={12} label="Prévoyez-vous des interviews pendant l’événement ?" full>
-                  <Choices options={INTERVIEW_ANSWERS} value={values.interviews} onChange={(next) => set('interviews', String(next))} />
-                </Field>
-                {showInterviews ? (
-                  <Field n={13} label="Si oui, quels types de personnes ?" hint="affiché si « Oui » ou « À confirmer »" full>
-                    <Choices options={PEOPLE_TYPES} value={values.interviewPeople} multiple onChange={(next) => set('interviewPeople', next as string[])} />
-                  </Field>
-                ) : null}
               </div>
             </section>
 
@@ -466,10 +454,10 @@ export default function AccreditationPage() {
                 <span className="fs__hint">Qui sera présent le 15 novembre</span>
               </div>
               <div className="fgrid">
-                <Field n={14} label="Nombre de personnes à accréditer" full>
+                <Field n={11} label="Nombre de personnes à accréditer" full>
                   <Choices options={TEAM_SIZES} value={values.teamSize} onChange={(next) => set('teamSize', String(next))} />
                 </Field>
-                <Field n={15} label="Noms et fonctions de l’équipe" full>
+                <Field n={12} label="Noms et fonctions de l’équipe" full>
                   <p className="notice">
                     <AlertCircle size={16} />
                     <span>{TEAM_NOTE}</span>
@@ -482,26 +470,13 @@ export default function AccreditationPage() {
             <section className={`fs${step === 5 ? ' is-current' : ''}`} id="s5" data-section="5">
               <div className="fs__head">
                 <span className="fs__num">05</span>
-                <h3 className="fs__title">Matériel</h3>
-                <span className="fs__hint">Pour préparer l’espace presse</span>
-              </div>
-              <div className="fgrid">
-                <Field n={16} label="Matériel" hint="plusieurs choix possibles" full>
-                  <Choices options={GEAR_TYPES} value={values.gear} multiple onChange={(next) => set('gear', next as string[])} />
-                </Field>
-              </div>
-            </section>
-
-            <section className={`fs${step === 6 ? ' is-current' : ''}`} id="s6" data-section="6">
-              <div className="fs__head">
-                <span className="fs__num">06</span>
                 <h3 className="fs__title">Engagement</h3>
                 <span className="fs__hint">Obligatoire pour envoyer</span>
               </div>
               <div className="engage">
                 <div className={`acc-box engage__box${errors.acceptAccuracy ? ' is-error' : ''}`}>
                   <p>
-                    <b>17.</b> {ENGAGEMENT_17} <i className="req">*</i>
+                    <b>13.</b> {ENGAGEMENT_17} <i className="req">*</i>
                   </p>
                   <button type="button" className="check" onClick={() => set('acceptAccuracy', !values.acceptAccuracy)}>
                     <i className={values.acceptAccuracy ? 'on' : ''}>{values.acceptAccuracy ? <Check size={13} strokeWidth={3} /> : null}</i>
@@ -511,7 +486,7 @@ export default function AccreditationPage() {
                 </div>
                 <div className={`acc-box engage__box${errors.acceptData ? ' is-error' : ''}`}>
                   <p>
-                    <b>18.</b> {ENGAGEMENT_18} <i className="req">*</i>
+                    <b>14.</b> {ENGAGEMENT_18} <i className="req">*</i>
                   </p>
                   <button type="button" className="check" onClick={() => set('acceptData', !values.acceptData)}>
                     <i className={values.acceptData ? 'on' : ''}>{values.acceptData ? <Check size={13} strokeWidth={3} /> : null}</i>
@@ -542,7 +517,7 @@ export default function AccreditationPage() {
               ) : (
                 <span />
               )}
-              {step < 6 ? (
+              {step < sectionCount ? (
                 <button type="button" className="btn btn--gold" onClick={() => goStep(step + 1)}>
                   Continuer <ArrowRight size={16} />
                 </button>
@@ -560,6 +535,15 @@ export default function AccreditationPage() {
   )
 }
 
+function submissionPayload(values: FormValues) {
+  const body: Partial<FormValues> = { ...values }
+  delete body.mediaLink
+  delete body.coverageProject
+  delete body.interviews
+  delete body.gear
+  return body
+}
+
 function fieldNumber(key: string) {
   const map: Record<string, number> = {
     fullName: 1,
@@ -570,10 +554,8 @@ function fieldNumber(key: string) {
     cityCountry: 6,
     mediaType: 7,
     mediaTypeOther: 7,
-    mediaLink: 8,
-    coverageProject: 11,
-    acceptAccuracy: 17,
-    acceptData: 18,
+    acceptAccuracy: 13,
+    acceptData: 14,
   }
   return map[key] ?? 1
 }
@@ -584,10 +566,9 @@ function isSectionDone(values: FormValues, section: number) {
 
 function sectionFilled(values: FormValues, section: number) {
   if (section === 1) return Boolean(values.fullName && values.mediaName && values.role && values.phone && values.email && values.cityCountry)
-  if (section === 2) return Boolean(values.mediaType && values.mediaLink)
-  if (section === 3) return Boolean(values.coverageProject.trim())
+  if (section === 2) return Boolean(values.mediaType && (values.mediaType !== 'Autre' || values.mediaTypeOther.trim()))
+  if (section === 3) return values.coverageTypes.length > 0 || values.interviewPeople.length > 0
   if (section === 4) return Boolean(values.teamSize || values.teamMembers.trim())
-  if (section === 5) return values.gear.length > 0
   return values.acceptAccuracy && values.acceptData
 }
 
