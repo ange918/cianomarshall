@@ -1,5 +1,6 @@
 // Contrat partagé (formulaire public + API + back-office).
-// 6 sections, 18 questions — formulations du brief maquette AFA 2026.
+// 5 sections, 14 questions. Les anciens champs (lien média, projet,
+// interviews oui/non, matériel) restent lisibles s’ils sont déjà stockés.
 
 export const MEDIA_TYPES = [
   'Presse écrite',
@@ -61,12 +62,13 @@ export const TEAM_NOTE =
 
 export const SECTIONS = [
   { id: 1, title: 'Identification', hint: 'Tous les champs sont obligatoires', questions: 6 },
-  { id: 2, title: 'Profil média', hint: 'Votre média et votre présence en ligne', questions: 3 },
-  { id: 3, title: 'Couverture', hint: 'Ce que vous prévoyez de couvrir', questions: 4 },
+  { id: 2, title: 'Profil média', hint: 'Votre média et votre présence en ligne', questions: 2 },
+  { id: 3, title: 'Couverture', hint: 'Ce que vous prévoyez de couvrir', questions: 2 },
   { id: 4, title: 'Équipe', hint: 'Qui sera présent le 15 novembre', questions: 2 },
-  { id: 5, title: 'Matériel', hint: 'Pour préparer l’espace presse', questions: 1 },
-  { id: 6, title: 'Engagement', hint: 'Obligatoire pour envoyer', questions: 2 },
+  { id: 5, title: 'Engagement', hint: 'Obligatoire pour envoyer', questions: 2 },
 ] as const
+
+export const QUESTION_COUNT = SECTIONS.reduce((sum, section) => sum + section.questions, 0)
 
 export const PRESS_CAPACITY_DEFAULT = 150
 
@@ -163,9 +165,7 @@ export const REFUSAL_REASONS: { id: string; label: string; message: string }[] =
 ]
 
 export const COMPLEMENT_FIELDS = [
-  '8. Lien média / site / page pro',
-  '11. Projet de couverture',
-  '15. Noms et fonctions de l’équipe',
+  '12. Noms et fonctions de l’équipe',
   'Autre précision',
 ] as const
 
@@ -268,17 +268,6 @@ function pickList(values: string[], allowed: readonly string[]) {
   return values.filter((v) => set.has(v))
 }
 
-function looksLikeLink(value: string) {
-  const s = value.trim()
-  if (!s) return false
-  try {
-    const url = new URL(s.includes('://') ? s : `https://${s}`)
-    return url.hostname.includes('.')
-  } catch {
-    return false
-  }
-}
-
 export function normalizeForm(input: Partial<FormValues>): FormValues {
   const base = emptyForm()
   const str = (v: unknown, max: number) =>
@@ -334,9 +323,6 @@ export function validateForm(values: FormValues): Record<string, string> {
   if (values.mediaType === 'Autre' && !values.mediaTypeOther.trim()) {
     e.mediaTypeOther = 'Précisez le type de média.'
   }
-  if (!values.mediaLink.trim()) e.mediaLink = 'Ce champ est obligatoire.'
-  else if (!looksLikeLink(values.mediaLink)) e.mediaLink = 'Indiquez un lien valide.'
-  if (!values.coverageProject.trim()) e.coverageProject = 'Ce champ est obligatoire.'
   if (!values.acceptAccuracy) e.acceptAccuracy = 'Cet engagement est obligatoire.'
   if (!values.acceptData) e.acceptData = 'Cet engagement est obligatoire.'
   return e
@@ -344,11 +330,10 @@ export function validateForm(values: FormValues): Record<string, string> {
 
 const SECTION_KEYS: Record<number, string[]> = {
   1: ['fullName', 'mediaName', 'role', 'phone', 'email', 'cityCountry'],
-  2: ['mediaType', 'mediaTypeOther', 'mediaLink'],
-  3: ['coverageProject'],
+  2: ['mediaType', 'mediaTypeOther'],
+  3: [],
   4: [],
-  5: [],
-  6: ['acceptAccuracy', 'acceptData'],
+  5: ['acceptAccuracy', 'acceptData'],
 }
 
 export function sectionErrors(values: FormValues, section: number) {
@@ -360,16 +345,15 @@ export function sectionErrors(values: FormValues, section: number) {
 }
 
 export function sectionComplete(values: FormValues, section: number) {
+  if (section === 3) return values.coverageTypes.length > 0 || values.interviewPeople.length > 0
   if (section === 4) return Boolean(values.teamSize || values.teamMembers.trim())
-  if (section === 5) return values.gear.length > 0
   return Object.keys(sectionErrors(values, section)).length === 0 && sectionHasSignal(values, section)
 }
 
 function sectionHasSignal(values: FormValues, section: number) {
   if (section === 1) return Boolean(values.fullName.trim())
   if (section === 2) return Boolean(values.mediaType)
-  if (section === 3) return Boolean(values.coverageProject.trim())
-  if (section === 6) return values.acceptAccuracy && values.acceptData
+  if (section === 5) return values.acceptAccuracy && values.acceptData
   return true
 }
 
@@ -435,7 +419,7 @@ export function computeStats(items: Accreditation[], now = new Date()): Stats {
   for (const item of items) {
     const type = mediaTypeShort(mediaTypeLabel(item))
     media.set(type, (media.get(type) ?? 0) + 1)
-    for (const c of item.coverageTypes) coverage.set(c, (coverage.get(c) ?? 0) + 1)
+    for (const c of item.coverageTypes ?? []) coverage.set(c, (coverage.get(c) ?? 0) + 1)
     const n = teamCount(item)
     if (item.status === 'approuvee') {
       badges += n

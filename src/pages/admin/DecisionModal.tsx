@@ -99,7 +99,7 @@ export default function DecisionModal({
               <span>{member.role || 'Personne à accréditer'}</span>
             </li>
           ))}
-          {!parseTeam(first.teamMembers).length ? <li>Les badges seront émis pour les personnes listées en Q15.</li> : null}
+          {!parseTeam(first.teamMembers).length ? <li>Les badges seront émis pour les personnes listées en Q12.</li> : null}
         </ul>
       ) : null}
       {mode === 'refuse' ? (

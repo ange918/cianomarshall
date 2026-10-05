@@ -54,7 +54,7 @@ export default function About() {
             <div className="stat-card">
               <span className="stat-card__num">15 Nov.</span>
               <span className="stat-card__label">Grande soirée &amp; Tapis Rouge</span>
-              <span className="stat-card__hint">Une cérémonie prestige à Cotonou</span>
+              <span className="stat-card__hint">Une cérémonie prestige à {EVENT.venue}</span>
             </div>
             <div className="stat-card">
               <span className="stat-card__num">5+</span>

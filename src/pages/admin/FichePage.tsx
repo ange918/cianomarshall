@@ -140,15 +140,7 @@ export default function FichePage({ id }: { id: string }) {
               <dl className="kv">
                 <Row k="7. Type de média" v={mediaTypeLabel(item)} />
                 <div className="full">
-                  <span>8. Lien média / site / page pro</span>
-                  <b>
-                    <a href={item.mediaLink.startsWith('http') ? item.mediaLink : `https://${item.mediaLink}`} target="_blank" rel="noreferrer">
-                      {item.mediaLink}
-                    </a>
-                  </b>
-                </div>
-                <div className="full">
-                  <span>9. Réseaux sociaux pro</span>
+                  <span>8. Réseaux sociaux pro</span>
                   <b className="pre">{item.socialLinks || '—'}</b>
                 </div>
               </dl>
@@ -156,30 +148,25 @@ export default function FichePage({ id }: { id: string }) {
             <Card n="03" title="Couverture">
               <dl className="kv">
                 <div className="full">
-                  <span>10. Type(s) de couverture</span>
+                  <span>9. Type(s) de couverture</span>
                   <div className="chips">
-                    {item.coverageTypes.length ? item.coverageTypes.map((type) => <span key={type}>{type}</span>) : <b>—</b>}
+                    {(item.coverageTypes ?? []).length ? item.coverageTypes.map((type) => <span key={type}>{type}</span>) : <b>—</b>}
                   </div>
                 </div>
                 <div className="full">
-                  <span>11. Projet de couverture</span>
-                  <b className="pre">{item.coverageProject || '—'}</b>
-                </div>
-                <Row k="12. Interviews pendant l’événement" v={item.interviews || '—'} />
-                <div className="full">
-                  <span>13. Personnes interviewées</span>
+                  <span>10. Types de personnes à interviewer</span>
                   <div className="chips">
-                    {item.interviewPeople.length ? item.interviewPeople.map((type) => <span key={type}>{type}</span>) : <b>—</b>}
+                    {(item.interviewPeople ?? []).length ? item.interviewPeople.map((type) => <span key={type}>{type}</span>) : <b>—</b>}
                   </div>
                 </div>
               </dl>
             </Card>
             <Card n="04" title="Équipe">
               <dl className="kv">
-                <Row k="14. Personnes à accréditer" v={String(teamCount(item) || '—')} />
+                <Row k="11. Personnes à accréditer" v={String(teamCount(item) || '—')} />
                 <Row k="Badges à émettre" v={`${teamCount(item) || 0} badge${teamCount(item) > 1 ? 's' : ''} nominatif${teamCount(item) > 1 ? 's' : ''}`} />
                 <div className="full">
-                  <span>15. Noms et fonctions</span>
+                  <span>12. Noms et fonctions</span>
                   <ol className="team-list">
                     {detail.team.map((member) => (
                       <li key={member.name}>
@@ -192,19 +179,34 @@ export default function FichePage({ id }: { id: string }) {
                 </div>
               </dl>
             </Card>
-            <Card n="05" title="Matériel">
-              <div className="chips">
-                {item.gear.length ? item.gear.map((type) => <span key={type}>{type}</span>) : <b>—</b>}
-              </div>
-            </Card>
-            <Card n="06" title="Engagement">
+            <Card n="05" title="Engagement">
               <p className={item.acceptAccuracy ? 'ok-line' : 'ko-line'}>
-                <Check size={14} /> 17. Exactitude {item.acceptAccuracy ? '— J’accepte' : '— non accepté'}
+                <Check size={14} /> 13. Exactitude {item.acceptAccuracy ? '— J’accepte' : '— non accepté'}
               </p>
               <p className={item.acceptData ? 'ok-line' : 'ko-line'}>
-                <Check size={14} /> 18. Traitement des informations {item.acceptData ? '— J’accepte' : '— non accepté'}
+                <Check size={14} /> 14. Traitement des informations {item.acceptData ? '— J’accepte' : '— non accepté'}
               </p>
             </Card>
+            {legacyAnswers(item).length ? (
+              <Card title="Ancien formulaire">
+                <dl className="kv">
+                  {legacyAnswers(item).map((row) =>
+                    row.href ? (
+                      <div className="full" key={row.k}>
+                        <span>{row.k}</span>
+                        <b>
+                          <a href={row.href} target="_blank" rel="noreferrer">
+                            {row.v}
+                          </a>
+                        </b>
+                      </div>
+                    ) : (
+                      <Row key={row.k} k={row.k} v={row.v} />
+                    ),
+                  )}
+                </dl>
+              </Card>
+            ) : null}
           </div>
 
           <aside className="decision">
@@ -262,11 +264,13 @@ export default function FichePage({ id }: { id: string }) {
                 <h3>Contrôles</h3>
               </div>
               <ul className="controls">
-                <li className={detail.controls.linkOk ? 'ok' : 'warn'}>
-                  {detail.controls.linkOk ? 'Lien média accessible' : detail.controls.linkOk === false ? 'Lien média inaccessible' : 'Lien média non vérifié'}
-                </li>
+                {item.mediaLink?.trim() ? (
+                  <li className={detail.controls.linkOk ? 'ok' : 'warn'}>
+                    {detail.controls.linkOk ? 'Lien média accessible' : detail.controls.linkOk === false ? 'Lien média inaccessible' : 'Lien média non vérifié'}
+                  </li>
+                ) : null}
                 <li className={detail.controls.engagements ? 'ok' : 'warn'}>
-                  {detail.controls.engagements ? 'Engagements 17 & 18 acceptés' : 'Engagements incomplets'}
+                  {detail.controls.engagements ? 'Engagements 13 & 14 acceptés' : 'Engagements incomplets'}
                 </li>
                 <li className={detail.controls.duplicateNames.length ? 'warn' : 'ok'}>
                   {detail.controls.duplicateNames.length
@@ -316,17 +320,36 @@ export default function FichePage({ id }: { id: string }) {
   )
 }
 
-function Card({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
+function Card({ n, title, children }: { n?: string; title: string; children: React.ReactNode }) {
   return (
     <section className="dcard">
       <div className="dcard__head">
         <h3>
-          <span className="fs__num">{n}</span> {title}
+          {n ? <span className="fs__num">{n}</span> : null} {title}
         </h3>
       </div>
       <div className="dcard__body">{children}</div>
     </section>
   )
+}
+
+function legacyAnswers(item: Accreditation) {
+  const rows: { k: string; v: string; href?: string }[] = []
+  const link = item.mediaLink?.trim()
+  if (link) {
+    rows.push({
+      k: 'Lien média / site / page pro',
+      v: link,
+      href: /^https?:\/\//i.test(link) ? link : `https://${link}`,
+    })
+  }
+  const project = item.coverageProject?.trim()
+  if (project) rows.push({ k: 'Projet de couverture', v: project })
+  const interviews = item.interviews?.trim()
+  if (interviews) rows.push({ k: 'Interviews pendant l’événement', v: interviews })
+  const gear = item.gear ?? []
+  if (gear.length) rows.push({ k: 'Matériel', v: gear.join(', ') })
+  return rows
 }
 
 function Row({ k, v }: { k: string; v: string }) {

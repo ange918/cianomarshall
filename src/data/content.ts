@@ -14,6 +14,7 @@ export const EVENT = {
   title: 'Africa Fashion Awards 2026',
   theme: 'L’Ère des Audacieux',
   date: '15 Novembre 2026',
+  venue: 'Calavi',
   organizer: 'Royal Fashion Event',
   founder: 'Gauthier ORE',
 } as const
