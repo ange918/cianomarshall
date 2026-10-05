@@ -215,7 +215,12 @@ export default function FichePage({ id }: { id: string }) {
                 <button type="button" className="btn btn--ko btn--lg" onClick={() => setMode('refuse')}>
                   Refuser
                 </button>
-                <p className="note">Le demandeur n’est pas notifié automatiquement (e-mail et WhatsApp hors V1).</p>
+                <p className="note">Le demandeur est notifié par WhatsApp au numéro de la demande.</p>
+                {lastWhatsApp(item) && !lastWhatsApp(item)?.ok ? (
+                  <div className="notice notice--ko" role="status">
+                    {lastWhatsApp(item)?.error || 'WhatsApp non envoyé.'}
+                  </div>
+                ) : null}
                 {item.decisionMessage ? <p className="decision-msg">{item.decisionMessage}</p> : null}
               </div>
             </section>
@@ -277,11 +282,12 @@ export default function FichePage({ id }: { id: string }) {
           mode={mode}
           items={[item]}
           onClose={() => setMode(null)}
-          onDone={async (title, text) => {
+          onDone={async (title, text, warning) => {
             setMode(null)
             await refresh()
             await load()
             toast(title, text)
+            if (warning) toast('WhatsApp non envoyé', warning, 'warn')
           }}
         />
       ) : null}
@@ -319,4 +325,9 @@ function initials(name: string) {
 function wa(phone: string) {
   const digits = phone.replace(/\D/g, '')
   return `https://wa.me/${digits}`
+}
+
+function lastWhatsApp(item: { notifications?: { ok: boolean; error?: string }[] }) {
+  const list = item.notifications || []
+  return list[list.length - 1]
 }

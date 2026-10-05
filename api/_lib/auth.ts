@@ -1,7 +1,19 @@
 import { createHmac } from 'node:crypto'
 
-export const ADMIN_NAME = 'Gauthier ORE'
 export const ADMIN_ROLE = 'Administrateur'
+
+export const ADMIN_NOT_CONFIGURED =
+  'Le back-office n’est pas configuré. Définissez ADMIN_EMAIL, ADMIN_PASSWORD et ADMIN_SESSION_SECRET.'
+
+export function adminConfigured() {
+  return Boolean(
+    process.env.ADMIN_EMAIL?.trim() && process.env.ADMIN_PASSWORD && process.env.ADMIN_SESSION_SECRET,
+  )
+}
+
+export function adminDisplayName() {
+  return process.env.ADMIN_NAME?.trim() || 'Administrateur'
+}
 
 const COOKIE = 'afa_admin'
 const TRY_COOKIE = 'afa_try'
@@ -11,15 +23,15 @@ const MAX_TRIES = 5
 const LOCK_MS = 15 * 60 * 1000
 
 function secret() {
-  return process.env.ADMIN_SESSION_SECRET || 'afa-2026-demo-session-key'
+  return process.env.ADMIN_SESSION_SECRET || ''
 }
 
 export function adminEmail() {
-  return (process.env.ADMIN_EMAIL || 'gauthier.ore@africafashionawards.com').trim().toLowerCase()
+  return (process.env.ADMIN_EMAIL || '').trim().toLowerCase()
 }
 
 export function adminPassword() {
-  return process.env.ADMIN_PASSWORD || 'Audace2026'
+  return process.env.ADMIN_PASSWORD || ''
 }
 
 export type Session = { email: string; name: string; exp: number }
@@ -55,6 +67,7 @@ function safeEqual(a: string, b: string) {
 }
 
 function unsign(token: string): string | null {
+  if (!secret()) return null
   const [payload, sig] = token.split('.')
   if (!payload || !sig) return null
   const expected = createHmac('sha256', secret()).update(payload).digest('base64url')
@@ -86,7 +99,7 @@ export function sessionCookie(remember: boolean, secure: boolean) {
   const maxAge = remember ? REMEMBER_AGE : MAX_AGE
   const session: Session = {
     email: adminEmail(),
-    name: ADMIN_NAME,
+    name: adminDisplayName(),
     exp: Date.now() + maxAge * 1000,
   }
   const token = sign(JSON.stringify(session))
@@ -126,6 +139,9 @@ export type LoginResult =
   | { ok: false; status: number; error: string; cookies: string[] }
 
 export function login(email: string, password: string, remember: boolean, cookieHeader: string | undefined, secure: boolean): LoginResult {
+  if (!adminConfigured()) {
+    return { ok: false, status: 503, error: ADMIN_NOT_CONFIGURED, cookies: [] }
+  }
   const tries = readTries(cookieHeader)
   if (tries.lockUntil && tries.lockUntil > Date.now()) {
     return {

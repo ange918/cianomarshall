@@ -24,15 +24,16 @@ import {
 
 export type SessionUser = { email: string; name: string; role: string }
 
-type Toast = { id: number; title: string; text: string }
+type Toast = { id: number; title: string; text: string; tone: 'ok' | 'warn' }
 
 type AdminContextValue = {
   session: SessionUser
   items: Accreditation[]
   capacity: number
   loading: boolean
+  whatsappConfigured: boolean
   refresh: () => Promise<void>
-  toast: (title: string, text: string) => void
+  toast: (title: string, text: string, tone?: 'ok' | 'warn') => void
   setCapacity: (n: number) => void
 }
 
@@ -79,13 +80,15 @@ export function AdminProvider({
 }) {
   const [items, setItems] = useState<Accreditation[]>([])
   const [capacity, setCapacity] = useState(150)
+  const [whatsappConfigured, setWhatsappConfigured] = useState(true)
   const [loading, setLoading] = useState(true)
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const refresh = async () => {
-    const data = await api<{ items: Accreditation[]; pressCapacity: number }>('/api/accreditations')
+    const data = await api<{ items: Accreditation[]; pressCapacity: number; whatsappConfigured?: boolean }>('/api/accreditations')
     setItems(data.items)
     setCapacity(data.pressCapacity)
+    setWhatsappConfigured(data.whatsappConfigured !== false)
   }
 
   useEffect(() => {
@@ -102,15 +105,15 @@ export function AdminProvider({
     }
   }, [])
 
-  const toast = (title: string, text: string) => {
+  const toast = (title: string, text: string, tone: 'ok' | 'warn' = 'ok') => {
     const id = Date.now() + Math.random()
-    setToasts((prev) => [...prev, { id, title, text }])
-    window.setTimeout(() => setToasts((prev) => prev.filter((item) => item.id !== id)), 4200)
+    setToasts((prev) => [...prev, { id, title, text, tone }])
+    window.setTimeout(() => setToasts((prev) => prev.filter((item) => item.id !== id)), tone === 'warn' ? 9000 : 4200)
   }
 
   const value = useMemo(
-    () => ({ session, items, capacity, loading, refresh, toast, setCapacity }),
-    [session, items, capacity, loading],
+    () => ({ session, items, capacity, loading, whatsappConfigured, refresh, toast, setCapacity }),
+    [session, items, capacity, loading, whatsappConfigured],
   )
 
   return (
@@ -118,9 +121,9 @@ export function AdminProvider({
       {children}
       <div className="toasts">
         {toasts.map((item) => (
-          <div className="toast" key={item.id} role="status">
-            <span className="state__ring state__ring--ok">
-              <span className="toast__check">✓</span>
+          <div className={`toast${item.tone === 'warn' ? ' toast--warn' : ''}`} key={item.id} role="status">
+            <span className={`state__ring ${item.tone === 'warn' ? 'state__ring--ko' : 'state__ring--ok'}`}>
+              <span className="toast__check">{item.tone === 'warn' ? '!' : '✓'}</span>
             </span>
             <div>
               <b>{item.title}</b>
@@ -198,7 +201,7 @@ export function Shell({
           </div>
         ))}
         <div className="side__user">
-          <span className="avatar">GO</span>
+          <span className="avatar">{initials(session.name)}</span>
           <div>
             <b>{session.name}</b>
             <small>{session.role}</small>
@@ -304,4 +307,10 @@ export function Modal({
       </div>
     </div>
   )
+}
+
+function initials(name: string) {
+  const parts = name.replace(/^@/, '').split(/\s+/).filter(Boolean)
+  const letters = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase()
+  return letters || 'A'
 }

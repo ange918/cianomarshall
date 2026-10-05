@@ -538,6 +538,25 @@ textarea.input {
   padding: 7rem 1.2rem 4rem;
 }
 
+.status-lookup {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-end;
+  margin: 1rem 0 1.2rem;
+}
+
+.status-lookup .field {
+  flex: 1;
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .status-lookup {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 .acc-confirm .panel {
   width: min(640px, 100%);
 }
@@ -630,6 +649,11 @@ textarea.input {
   align-items: center;
   justify-content: center;
   margin-bottom: 1.1rem;
+}
+
+.state__ring--ko {
+  background: rgba(224, 112, 95, 0.16);
+  color: #e0705f;
 }
 
 .state__ring--ok {
@@ -1727,6 +1751,15 @@ textarea.input {
 .toast span {
   font-size: 0.82rem;
   color: #3a3a3a;
+}
+
+.toast--warn {
+  background: #2a1714;
+  color: #f5f4f0;
+}
+
+.toast--warn span {
+  color: #f0c2bb;
 }
 
 .login {

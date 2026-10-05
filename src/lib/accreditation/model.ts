@@ -88,6 +88,15 @@ export type HistoryEntry = {
   detail?: string
 }
 
+export type WhatsAppLog = {
+  at: string
+  channel: 'whatsapp'
+  to: string
+  ok: boolean
+  provider: string
+  error?: string
+}
+
 export type FormValues = {
   fullName: string
   mediaName: string
@@ -121,6 +130,7 @@ export type Accreditation = FormValues & {
   decisionMessage: string
   refusalReason: string
   history: HistoryEntry[]
+  notifications?: WhatsAppLog[]
 }
 
 export type TeamMember = { name: string; role: string }

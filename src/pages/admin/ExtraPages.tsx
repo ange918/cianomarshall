@@ -70,16 +70,16 @@ export function PeoplePage() {
 
 export function TemplatesPage() {
   const sample = {
-    fullName: 'Aïcha Dossou',
-    teamSize: '2',
-    teamMembers: '1. Aïcha Dossou — Rédactrice mode',
+    fullName: 'le demandeur',
+    teamSize: '1',
+    teamMembers: '',
   }
   return (
     <Shell crumbs="Réglages / Modèles de messages">
       <header className="admin-head">
         <div>
           <h1>Modèles de messages</h1>
-          <p>Textes pré-remplis dans les modales de décision. Ils sont enregistrés sur la fiche, sans envoi.</p>
+          <p>Textes pré-remplis dans les modales. À la validation, le message part par WhatsApp vers le numéro de la demande.</p>
         </div>
       </header>
       <section className="dcard">

@@ -9,7 +9,7 @@ import { navigate } from '../../lib/router'
 import { Badge, Shell, useAdmin } from './ui'
 
 export default function DashboardPage() {
-  const { items, capacity, loading } = useAdmin()
+  const { items, capacity, loading, whatsappConfigured } = useAdmin()
   const stats = computeStats(items)
   const maxMedia = Math.max(1, ...stats.byMedia.map((row) => row.count))
   const ratio = capacity ? Math.min(100, Math.round((stats.capacityUsed / capacity) * 100)) : 0
@@ -30,6 +30,12 @@ export default function DashboardPage() {
           </button>
         </div>
       </header>
+
+      {!loading && !whatsappConfigured ? (
+        <div className="notice notice--ko" role="status">
+          WhatsApp n’est pas configuré. Les décisions seront enregistrées, mais les demandeurs ne recevront pas de message tant que les variables TWILIO_* ou META_WHATSAPP_* sont absentes.
+        </div>
+      ) : null}
 
       <section className="kpis">
         <article className="kpi">
@@ -120,6 +126,13 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
+                {!loading && items.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="empty">
+                      Aucune demande pour le moment. Les envois du formulaire public apparaîtront ici.
+                    </td>
+                  </tr>
+                ) : null}
                 {items.slice(0, 6).map((item) => (
                   <tr key={item.id} onClick={() => navigate(`/admin/demandes/${item.id}`)}>
                     <td>

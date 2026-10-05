@@ -12,6 +12,7 @@ import { AdminProvider, type SessionUser } from './ui'
 export default function AdminApp() {
   const path = usePathname()
   const [session, setSession] = useState<SessionUser | null>(null)
+  const [configured, setConfigured] = useState(true)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -33,8 +34,10 @@ export default function AdminApp() {
       .then((user) => {
         if (!cancelled) setSession(user)
       })
-      .catch(() => {
-        if (!cancelled) setSession(null)
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setSession(null)
+        if (err instanceof ApiError && err.status === 503) setConfigured(false)
       })
       .finally(() => {
         if (!cancelled) setReady(true)
@@ -48,7 +51,7 @@ export default function AdminApp() {
     return <div className="admin-boot">Chargement du back-office…</div>
   }
 
-  if (!session) return <LoginPage onSuccess={setSession} />
+  if (!session) return <LoginPage configured={configured} onSuccess={setSession} />
 
   const fiche = path.match(/^\/admin\/demandes\/([^/]+)$/)
   let page = <DashboardPage />
@@ -63,7 +66,7 @@ export default function AdminApp() {
   return <AdminProvider session={session}>{page}</AdminProvider>
 }
 
-function LoginPage({ onSuccess }: { onSuccess: (user: SessionUser) => void }) {
+function LoginPage({ configured, onSuccess }: { configured: boolean; onSuccess: (user: SessionUser) => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(true)
@@ -123,6 +126,11 @@ function LoginPage({ onSuccess }: { onSuccess: (user: SessionUser) => void }) {
           </a>
           <h1>Connexion</h1>
           <p className="section__intro">Accès réservé à l’équipe d’organisation.</p>
+          {!configured ? (
+            <div className="notice notice--ko" role="alert">
+              Le back-office n’est pas configuré. Définissez ADMIN_EMAIL, ADMIN_PASSWORD et ADMIN_SESSION_SECRET sur le serveur, puis redéployez.
+            </div>
+          ) : null}
           <label className="field">
             <span>Adresse e-mail</span>
             <input className="input" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required />
@@ -145,7 +153,7 @@ function LoginPage({ onSuccess }: { onSuccess: (user: SessionUser) => void }) {
               Mot de passe oublié&nbsp;?
             </button>
           </div>
-          <button className="btn btn--gold btn--lg btn--block" type="submit" disabled={busy}>
+          <button className="btn btn--gold btn--lg btn--block" type="submit" disabled={busy || !configured}>
             {busy ? 'Connexion…' : 'Se connecter'} <ArrowRight size={16} />
           </button>
           {error ? (
@@ -154,7 +162,7 @@ function LoginPage({ onSuccess }: { onSuccess: (user: SessionUser) => void }) {
             </div>
           ) : null}
           {forgot ? (
-            <p className="note">Le mot de passe est remis par l’équipe d’organisation. Compte de démonstration documenté pour la recette.</p>
+            <p className="note">Le mot de passe est remis par l’équipe d’organisation. Il n’existe pas de compte par défaut.</p>
           ) : null}
           <p className="note">Connexion chiffrée · session 8 h, ou 30 jours si « Rester connecté ».</p>
         </form>

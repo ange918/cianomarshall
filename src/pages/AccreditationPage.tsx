@@ -392,7 +392,7 @@ export default function AccreditationPage() {
               </div>
               <div className="fgrid">
                 <Field n={1} label="Nom et prénom" required error={errors.fullName}>
-                  <input className={`input${errors.fullName ? ' is-error' : ''}`} value={values.fullName} placeholder="Ex. Aïcha Dossou" onChange={(e) => set('fullName', e.target.value)} />
+                  <input className={`input${errors.fullName ? ' is-error' : ''}`} value={values.fullName} placeholder="Ex. Prénom Nom" onChange={(e) => set('fullName', e.target.value)} />
                 </Field>
                 <Field n={2} label="Nom du média / de la structure" required error={errors.mediaName}>
                   <input className={`input${errors.mediaName ? ' is-error' : ''}`} value={values.mediaName} placeholder="Ex. Bénin Mode Mag" onChange={(e) => set('mediaName', e.target.value)} />

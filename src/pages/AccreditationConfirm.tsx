@@ -27,6 +27,7 @@ export default function AccreditationConfirm() {
       `Statut : ${data.statusLabel}`,
       '',
       'Cette demande sera examinée par l’équipe AFA.',
+      'La décision sera envoyée par WhatsApp.',
       'L’envoi ne vaut pas confirmation automatique d’accréditation.',
     ].join('\n')
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
@@ -73,20 +74,20 @@ export default function AccreditationConfirm() {
                     </b>
                   </li>
                   <li>
-                    Réponse par <b>E-mail &amp; WhatsApp</b>
+                    Décision envoyée par <b>WhatsApp</b>
                   </li>
                 </ul>
                 <div className="panel__actions panel__actions--row">
                   <button type="button" className="btn btn--ghost" onClick={download}>
                     Télécharger le récapitulatif <Download size={16} />
                   </button>
-                  <button type="button" className="btn btn--gold" onClick={() => navigate('/')}>
-                    Retour au site <ArrowUpRight size={16} />
+                  <button type="button" className="btn btn--gold" onClick={() => navigate(`/accreditation/statut?code=${encodeURIComponent(data.reference)}`)}>
+                    Suivre le statut <ArrowUpRight size={16} />
                   </button>
                 </div>
                 <p className="note">
-                  La demande est enregistrée avec le statut Nouvelle et visible dans le back-office.
-                  L’envoi d’e-mail n’est pas activé dans cette version.
+                  La décision (validée, complément ou refus) vous sera envoyée par WhatsApp au numéro indiqué.
+                  Cette page de suivi n’affiche que le statut, pas vos informations.
                 </p>
               </div>
             ) : (

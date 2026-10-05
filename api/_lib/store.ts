@@ -1,6 +1,16 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { buildSeed, type StoreData } from './seed.js'
+import { PRESS_CAPACITY_DEFAULT, type Accreditation } from '../../src/lib/accreditation/model.js'
+
+export type StoreData = {
+  seq: number
+  pressCapacity: number
+  items: Accreditation[]
+}
+
+export function emptyStore(): StoreData {
+  return { seq: 0, pressCapacity: PRESS_CAPACITY_DEFAULT, items: [] }
+}
 
 const FILE = path.join(process.cwd(), 'data', 'accreditations.json')
 const TMP = path.join('/tmp', 'afa-accreditations.json')
@@ -116,7 +126,7 @@ async function load(): Promise<StoreData> {
       return cache
     }
   }
-  cache = buildSeed()
+  cache = emptyStore()
   return cache
 }
 

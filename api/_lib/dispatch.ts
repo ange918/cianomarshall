@@ -14,14 +14,17 @@ import {
   type Status,
 } from '../../src/lib/accreditation/model.js'
 import {
-  ADMIN_NAME,
+  ADMIN_NOT_CONFIGURED,
   ADMIN_ROLE,
+  adminConfigured,
+  adminDisplayName,
   adminEmail,
   clearSessionCookie,
   login,
   readSession,
 } from './auth.js'
 import { snapshot, updateStore, withStore } from './store.js'
+import { notifyApplicant, whatsappConfigured, whatsappLogDetail, type WhatsAppResult } from './whatsapp.js'
 
 export type DispatchReq = {
   method: string
@@ -79,6 +82,27 @@ function sortItems(items: Accreditation[]) {
   return [...items].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
 }
 
+function guardAdmin(session: ReturnType<typeof readSession>): DispatchRes | null {
+  if (!adminConfigured()) return json(503, { configured: false, error: ADMIN_NOT_CONFIGURED })
+  if (!session) return json(401, { configured: true, error: 'Non connecté' })
+  return null
+}
+
+function publicWhatsApp(notice: WhatsAppResult) {
+  return {
+    sent: notice.sent,
+    provider: notice.provider,
+    warning: notice.warning,
+  }
+}
+
+const PUBLIC_STATUS: Record<Status, string> = {
+  nouvelle: 'Votre demande est en cours d’examen.',
+  approuvee: 'Votre accréditation est validée.',
+  refusee: 'Votre demande n’a pas été retenue.',
+  complement: 'Un complément d’information est demandé. Consultez le WhatsApp reçu.',
+}
+
 export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
   const method = req.method.toUpperCase()
   const path = req.path.replace(/\/+$/, '') || '/'
@@ -98,7 +122,7 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
     }
     return json(
       200,
-      { email: adminEmail(), name: ADMIN_NAME, role: ADMIN_ROLE },
+      { email: adminEmail(), name: adminDisplayName(), role: ADMIN_ROLE },
       { 'Set-Cookie': result.cookies },
     )
   }
@@ -108,12 +132,14 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
   }
 
   if (path === '/api/admin/session' && method === 'GET') {
-    if (!session) return json(401, { error: 'Non connecté' })
-    return json(200, { email: session.email, name: session.name, role: ADMIN_ROLE })
+    const denied = guardAdmin(session)
+    if (denied) return denied
+    return json(200, { email: session!.email, name: session!.name, role: ADMIN_ROLE, configured: true })
   }
 
   if (path === '/api/admin/settings' && method === 'PATCH') {
-    if (!session) return json(401, { error: 'Non connecté' })
+    const denied = guardAdmin(session)
+    if (denied) return denied
     const body = asRecord(req.body)
     const capacity = Math.round(Number(body.pressCapacity))
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 5000) {
@@ -127,9 +153,30 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
   }
 
   if (path === '/api/accreditations' && method === 'GET') {
-    if (!session) return json(401, { error: 'Non connecté' })
+    const denied = guardAdmin(session)
+    if (denied) return denied
     const data = await withStore((store) => snapshot(store))
-    return json(200, { items: sortItems(data.items), pressCapacity: data.pressCapacity })
+    return json(200, {
+      items: sortItems(data.items),
+      pressCapacity: data.pressCapacity,
+      whatsappConfigured: whatsappConfigured(),
+    })
+  }
+
+  if (path === '/api/accreditations/statut' && method === 'GET') {
+    const code = String(req.query.get('code') || '')
+      .trim()
+      .toUpperCase()
+    if (!/^AFA26-ACC-\d{4}$/.test(code)) return json(400, { error: 'Référence invalide.' })
+    const found = await withStore((data) => data.items.find((item) => item.reference === code) || null)
+    if (!found) return json(404, { error: 'Aucune demande pour cette référence.' })
+    return json(200, {
+      reference: found.reference,
+      status: found.status,
+      statusLabel: STATUS_LABEL[found.status],
+      summary: PUBLIC_STATUS[found.status],
+      updatedAt: found.updatedAt,
+    })
   }
 
   if (path === '/api/accreditations' && method === 'POST') {
@@ -162,6 +209,7 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
             detail: 'Formulaire public',
           },
         ],
+        notifications: [],
       }
       data.items.push(record)
       return {
@@ -180,7 +228,8 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
   const itemMatch = path.match(/^\/api\/accreditations\/([^/]+)$/)
   if (itemMatch) {
     const idOrRef = decodeURIComponent(itemMatch[1] || '')
-    if (!session) return json(401, { error: 'Non connecté' })
+    const denied = guardAdmin(session)
+    if (denied) return denied
 
     if (idOrRef === 'export' && method === 'GET') {
       const data = await withStore((store) => snapshot(store))
@@ -211,7 +260,7 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
         if (!recent) {
           const entry: HistoryEntry = {
             at: new Date().toISOString(),
-            actor: session.name || ADMIN_NAME,
+            actor: session!.name || adminDisplayName(),
             action: 'Ouverte',
             detail: 'Consultation de la fiche',
           }
@@ -240,7 +289,7 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
         const item = data.items.find((it) => it.id === idOrRef || it.reference === idOrRef)
         if (!item) return { error: 'Demande introuvable.', status: 404 as const }
         const now = new Date().toISOString()
-        const actor = session.name || ADMIN_NAME
+        const actor = session!.name || adminDisplayName()
         if (action === 'notes') {
           item.internalNotes = String(body.internalNotes ?? '').slice(0, 4000)
           item.updatedAt = now
@@ -299,7 +348,48 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
         return { error: 'Action inconnue.', status: 400 as const }
       })
       if ('item' in updated && updated.item) {
-        return json(200, { item: updated.item, statusLabel: STATUS_LABEL[updated.item.status] })
+        if (action === 'notes') {
+          return json(200, { item: updated.item, statusLabel: STATUS_LABEL[updated.item.status] })
+        }
+        const current = snapshot({ seq: 0, pressCapacity: 0, items: [updated.item] }).items[0]
+        let notice: WhatsAppResult
+        try {
+          notice = await notifyApplicant(current)
+        } catch {
+          notice = {
+            sent: false,
+            provider: 'none',
+            to: current.phone,
+            warning: 'Décision enregistrée. WhatsApp non envoyé : erreur technique.',
+          }
+        }
+        const logged = await updateStore((data) => {
+          const item = data.items.find((it) => it.id === current.id)
+          if (!item) return { item: current, whatsapp: publicWhatsApp(notice) }
+          const at = new Date().toISOString()
+          item.notifications = item.notifications || []
+          item.notifications.push({
+            at,
+            channel: 'whatsapp',
+            to: notice.to,
+            ok: notice.sent,
+            provider: notice.provider,
+            error: notice.warning,
+          })
+          item.history.push({
+            at,
+            actor: 'WhatsApp',
+            action: notice.sent ? 'WhatsApp envoyé' : 'WhatsApp non envoyé',
+            detail: whatsappLogDetail(notice),
+          })
+          item.updatedAt = at
+          return { item, whatsapp: publicWhatsApp(notice) }
+        })
+        return json(200, {
+          item: logged.item,
+          statusLabel: STATUS_LABEL[logged.item.status],
+          whatsapp: logged.whatsapp,
+        })
       }
       const failure = updated as { error?: string; status?: number }
       return json(failure.status || 400, { error: failure.error || 'Action impossible.' })

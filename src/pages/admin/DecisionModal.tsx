@@ -28,7 +28,7 @@ export default function DecisionModal({
   mode: DecisionMode
   items: Accreditation[]
   onClose: () => void
-  onDone: (title: string, text: string) => void
+  onDone: (title: string, text: string, warning?: string) => void
 }) {
   const first = items[0]
   const [reason, setReason] = useState(REFUSAL_REASONS[1]?.id || 'lien')
@@ -55,6 +55,7 @@ export default function DecisionModal({
     setBusy(true)
     setError('')
     try {
+      const warnings: string[] = []
       for (const item of items) {
         const body =
           mode === 'approve'
@@ -62,7 +63,11 @@ export default function DecisionModal({
             : mode === 'refuse'
               ? { action: 'refuse', reason, message: many ? message : message }
               : { action: 'complement', fields, message: many ? complementMessage(item.fullName, fields) : message }
-        await api(`/api/accreditations/${item.id}`, { method: 'PATCH', body: JSON.stringify(body) })
+        const result = await api<{ whatsapp?: { sent: boolean; warning?: string } }>(`/api/accreditations/${item.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        })
+        if (result.whatsapp && !result.whatsapp.sent && result.whatsapp.warning) warnings.push(result.whatsapp.warning)
       }
       const name = many ? `${items.length} demandes` : first.fullName
       const title =
@@ -71,7 +76,7 @@ export default function DecisionModal({
         mode === 'approve'
           ? `${name} · ${teamCount(first)} badge${teamCount(first) > 1 ? 's' : ''}`
           : name
-      onDone(many && mode === 'approve' ? 'Demandes approuvées' : title, text)
+      onDone(many && mode === 'approve' ? 'Demandes approuvées' : title, text, warnings[0])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Action impossible.')
     } finally {
@@ -133,7 +138,7 @@ export default function DecisionModal({
         <span>Message au demandeur</span>
         <textarea className="input textarea" value={message} onChange={(event) => setMessage(event.target.value)} />
       </label>
-      <p className="note">Le message est enregistré dans l’historique. L’envoi e-mail / WhatsApp n’est pas activé dans cette version.</p>
+      <p className="note">Le demandeur reçoit ce message par WhatsApp, avec la référence et la décision. Si l’envoi échoue, la décision reste enregistrée et un avertissement s’affiche.</p>
       {error ? <p className="field__err">{error}</p> : null}
       <div className="panel__actions">
         <button type="button" className={`btn btn--lg ${mode === 'refuse' ? 'btn--ko-solid' : 'btn--gold'}`} disabled={busy} onClick={() => void submit()}>

@@ -17,6 +17,7 @@ import FloatingContact from './components/FloatingContact'
 import PageCurtain from './components/PageCurtain'
 import AccreditationPage from './pages/AccreditationPage'
 import AccreditationConfirm from './pages/AccreditationConfirm'
+import AccreditationStatus from './pages/AccreditationStatus'
 import AdminApp from './pages/admin/AdminApp'
 import { initCopy } from './lib/copyReveal'
 import { setLenis, smoothScrollTo } from './lib/nav'
@@ -95,6 +96,7 @@ export default function App() {
   const path = usePathname()
   if (path.startsWith('/admin')) return <AdminApp />
   if (path.startsWith('/accreditation/confirmation')) return <AccreditationConfirm />
+  if (path.startsWith('/accreditation/statut')) return <AccreditationStatus />
   if (path.startsWith('/accreditation')) return <AccreditationPage />
   return <Landing />
 }

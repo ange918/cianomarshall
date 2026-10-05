@@ -255,11 +255,12 @@ export default function ListPage({ initialQuery = '', initialStatus = 'toutes' }
           mode={decision.mode}
           items={decision.items}
           onClose={() => setDecision(null)}
-          onDone={async (title, text) => {
+          onDone={async (title, text, warning) => {
             setDecision(null)
             setSelected([])
             await refresh()
             toast(title, text)
+            if (warning) toast('WhatsApp non envoyé', warning, 'warn')
           }}
         />
       ) : null}
