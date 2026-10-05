@@ -1,4 +1,4 @@
-import { firstName } from './model'
+import { firstName } from './model.js'
 
 /**
  * Numéro WhatsApp au format E.164.
