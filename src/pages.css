@@ -84,6 +84,11 @@
   max-width: 52ch;
 }
 
+.acc-hero__row p.acc-hero__eta {
+  margin-top: 0.85rem;
+  color: var(--gray-dim);
+}
+
 .acc-hero__facts {
   display: flex;
   border: 1px solid var(--line);

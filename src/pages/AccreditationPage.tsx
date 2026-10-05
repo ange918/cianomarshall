@@ -256,6 +256,9 @@ export default function AccreditationPage() {
                   Journalistes, photographes, vidéastes, créateurs de contenu : demandez votre
                   accréditation pour couvrir le tapis rouge et la cérémonie de la 7<sup>e</sup> édition.
                 </p>
+                <p className="note acc-hero__eta">
+                  Temps estimé pour remplir le formulaire : ≈ 6 min
+                </p>
               </div>
               <div className="acc-hero__facts">
                 <div>
@@ -264,11 +267,7 @@ export default function AccreditationPage() {
                 </div>
                 <div>
                   <span>Lieu</span>
-                  <b>Cotonou</b>
-                </div>
-                <div>
-                  <span>Durée</span>
-                  <b>≈ 6 min</b>
+                  <b>{EVENT.venue}</b>
                 </div>
               </div>
             </div>
