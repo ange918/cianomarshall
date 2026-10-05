@@ -14,7 +14,7 @@ import { Modal } from './ui'
 export type DecisionMode = 'approve' | 'refuse' | 'complement'
 
 const TITLES: Record<DecisionMode, { kicker: string; title: string; confirm: string }> = {
-  approve: { kicker: 'Approuver', title: 'Approuver la demande', confirm: 'Confirmer l’approbation' },
+  approve: { kicker: 'Validation', title: 'Marquer comme validée', confirm: 'Enregistrer la validation' },
   refuse: { kicker: 'Refuser', title: 'Refuser la demande', confirm: 'Confirmer le refus' },
   complement: { kicker: 'Demande de complément', title: 'Demande de complément', confirm: 'Envoyer la demande' },
 }
@@ -71,12 +71,12 @@ export default function DecisionModal({
       }
       const name = many ? `${items.length} demandes` : first.fullName
       const title =
-        mode === 'approve' ? 'Demande approuvée' : mode === 'refuse' ? 'Demande refusée' : 'Complément demandé'
+        mode === 'approve' ? 'Demande validée' : mode === 'refuse' ? 'Demande refusée' : 'Complément demandé'
       const text =
         mode === 'approve'
           ? `${name} · ${teamCount(first)} badge${teamCount(first) > 1 ? 's' : ''}`
           : name
-      onDone(many && mode === 'approve' ? 'Demandes approuvées' : title, text, warnings[0])
+      onDone(many && mode === 'approve' ? 'Demandes validées' : title, text, warnings[0])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Action impossible.')
     } finally {
@@ -138,7 +138,11 @@ export default function DecisionModal({
         <span>Message au demandeur</span>
         <textarea className="input textarea" value={message} onChange={(event) => setMessage(event.target.value)} />
       </label>
-      <p className="note">Le demandeur reçoit ce message par WhatsApp, avec la référence et la décision. Si l’envoi échoue, la décision reste enregistrée et un avertissement s’affiche.</p>
+      <p className="note">
+        {mode === 'approve'
+          ? 'Le statut passe à Approuvée. Un WhatsApp de confirmation est tenté si la messagerie est configurée. Le contact direct se fait avec le bouton Contacter.'
+          : 'Le demandeur reçoit ce message par WhatsApp, avec la référence et la décision. Si l’envoi échoue, la décision reste enregistrée et un avertissement s’affiche.'}
+      </p>
       {error ? <p className="field__err">{error}</p> : null}
       <div className="panel__actions">
         <button type="button" className={`btn btn--lg ${mode === 'refuse' ? 'btn--ko-solid' : 'btn--gold'}`} disabled={busy} onClick={() => void submit()}>

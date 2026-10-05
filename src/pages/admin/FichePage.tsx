@@ -9,6 +9,7 @@ import {
   type HistoryEntry,
   type TeamMember,
 } from '../../lib/accreditation/model'
+import { contactWhatsAppUrl } from '../../lib/accreditation/phone'
 import { navigate } from '../../lib/router'
 import DecisionModal, { type DecisionMode } from './DecisionModal'
 import { Badge, Shell, useAdmin } from './ui'
@@ -48,6 +49,7 @@ export default function FichePage({ id }: { id: string }) {
   }, [id])
 
   const item = detail?.item
+  const contactUrl = item ? contactWhatsAppUrl(item) : null
   const same = item ? items.filter((row) => row.status === item.status) : []
   const index = item ? same.findIndex((row) => row.id === item.id) : -1
   const prev = index > 0 ? same[index - 1] : undefined
@@ -108,9 +110,15 @@ export default function FichePage({ id }: { id: string }) {
                   </p>
                 </div>
                 <div className="profile__actions">
-                  <a className="btn btn--ghost btn--sm" href={wa(item.phone)} target="_blank" rel="noreferrer">
-                    <MessageCircle size={14} /> WhatsApp
-                  </a>
+                  {contactUrl ? (
+                    <a className="btn btn--ghost btn--sm" href={contactUrl} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle size={14} /> WhatsApp
+                    </a>
+                  ) : (
+                    <span className="btn btn--ghost btn--sm" aria-disabled="true">
+                      <MessageCircle size={14} /> WhatsApp
+                    </span>
+                  )}
                   <a className="btn btn--ghost btn--sm" href={`mailto:${item.email}`}>
                     <Mail size={14} /> E-mail
                   </a>
@@ -206,16 +214,29 @@ export default function FichePage({ id }: { id: string }) {
                 <Badge status={item.status} />
               </div>
               <div className="dcard__body">
-                <button type="button" className="btn btn--ok btn--lg" onClick={() => setMode('approve')}>
-                  <Check size={16} /> Approuver
-                </button>
+                {contactUrl ? (
+                  <a className="btn btn--ok btn--lg" href={contactUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle size={16} /> Contacter
+                  </a>
+                ) : (
+                  <button type="button" className="btn btn--ok btn--lg" disabled>
+                    <MessageCircle size={16} /> Contacter
+                  </button>
+                )}
                 <button type="button" className="btn btn--ghost btn--lg" onClick={() => setMode('complement')}>
                   Demander un complément
                 </button>
                 <button type="button" className="btn btn--ko btn--lg" onClick={() => setMode('refuse')}>
                   Refuser
                 </button>
-                <p className="note">Le demandeur est notifié par WhatsApp au numéro de la demande.</p>
+                <button type="button" className="btn btn--quiet" onClick={() => setMode('approve')}>
+                  Marquer comme validée
+                </button>
+                <p className="note">
+                  {contactUrl
+                    ? 'Contacter ouvre WhatsApp avec un message prérempli, à compléter avant l’envoi. Complément et refus mettent à jour le dossier et tentent une notification. « Marquer comme validée » enregistre le statut Approuvée.'
+                    : 'Le numéro indiqué ne permet pas d’ouvrir WhatsApp. Complément, refus et « Marquer comme validée » restent disponibles.'}
+                </p>
                 {lastWhatsApp(item) && !lastWhatsApp(item)?.ok ? (
                   <div className="notice notice--ko" role="status">
                     {lastWhatsApp(item)?.error || 'WhatsApp non envoyé.'}
@@ -320,11 +341,6 @@ function Row({ k, v }: { k: string; v: string }) {
 function initials(name: string) {
   const parts = name.replace(/^@/, '').split(/\s+/).filter(Boolean)
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase()
-}
-
-function wa(phone: string) {
-  const digits = phone.replace(/\D/g, '')
-  return `https://wa.me/${digits}`
 }
 
 function lastWhatsApp(item: { notifications?: { ok: boolean; error?: string }[] }) {

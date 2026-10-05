@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Eye, X } from 'lucide-react'
+import { Check, Eye, MessageCircle, X } from 'lucide-react'
 import {
   MEDIA_TYPES,
   STATUS_LABEL,
@@ -9,6 +9,7 @@ import {
   teamCount,
   type Accreditation,
 } from '../../lib/accreditation/model'
+import { contactWhatsAppUrl } from '../../lib/accreditation/phone'
 import { navigate, useSearch } from '../../lib/router'
 import DecisionModal, { type DecisionMode } from './DecisionModal'
 import { Badge, Shell, useAdmin } from './ui'
@@ -136,7 +137,7 @@ export default function ListPage({ initialQuery = '', initialStatus = 'toutes' }
           <b>{selectedItems.length}</b> demande{selectedItems.length > 1 ? 's' : ''} sélectionnée
           {selectedItems.length > 1 ? 's' : ''}
           <button type="button" onClick={() => setDecision({ mode: 'approve', items: selectedItems })}>
-            Approuver
+            Marquer comme validées
           </button>
           <button type="button" onClick={() => setDecision({ mode: 'complement', items: selectedItems })}>
             Demander un complément
@@ -212,15 +213,19 @@ export default function ListPage({ initialQuery = '', initialStatus = 'toutes' }
                     <button type="button" className="ibtn" aria-label="Ouvrir" onClick={() => navigate(`/admin/demandes/${item.id}`)}>
                       <Eye size={15} />
                     </button>
+                    {(() => {
+                      const contactUrl = contactWhatsAppUrl(item)
+                      if (!contactUrl) return null
+                      return (
+                        <a className="ibtn" href={contactUrl} target="_blank" rel="noopener noreferrer" aria-label={`Contacter ${item.fullName}`}>
+                          <MessageCircle size={15} />
+                        </a>
+                      )
+                    })()}
                     {item.status === 'nouvelle' || item.status === 'complement' ? (
-                      <>
-                        <button type="button" className="ibtn ibtn--ok" aria-label="Approuver" onClick={() => setDecision({ mode: 'approve', items: [item] })}>
-                          <Check size={15} />
-                        </button>
-                        <button type="button" className="ibtn ibtn--ko" aria-label="Refuser" onClick={() => setDecision({ mode: 'refuse', items: [item] })}>
-                          <X size={15} />
-                        </button>
-                      </>
+                      <button type="button" className="ibtn ibtn--ko" aria-label="Refuser" onClick={() => setDecision({ mode: 'refuse', items: [item] })}>
+                        <X size={15} />
+                      </button>
                     ) : null}
                   </div>
                 </td>

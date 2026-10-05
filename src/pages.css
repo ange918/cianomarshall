@@ -1533,6 +1533,26 @@ textarea.input {
   color: #0a0a0a;
 }
 
+.btn--quiet {
+  align-self: flex-start;
+  background: transparent;
+  border-color: transparent;
+  color: var(--gray);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 0.2rem 0.1rem;
+}
+
+a.ibtn {
+  text-decoration: none;
+}
+
+.btn--quiet:hover {
+  color: var(--white);
+}
+
 .btn--ko {
   background: transparent;
   color: var(--danger);
