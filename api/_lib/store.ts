@@ -12,6 +12,13 @@ export function emptyStore(): StoreData {
   return { seq: 0, pressCapacity: PRESS_CAPACITY_DEFAULT, items: [] }
 }
 
+export class PersistError extends Error {
+  constructor(message = 'Impossible d’enregistrer la demande pour le moment. Réessayez dans un instant.') {
+    super(message)
+    this.name = 'PersistError'
+  }
+}
+
 const FILE = path.join(process.cwd(), 'data', 'accreditations.json')
 const TMP = path.join('/tmp', 'afa-accreditations.json')
 const REDIS_KEY = 'afa-accreditations'
@@ -101,46 +108,59 @@ async function writeFileStore(data: StoreData) {
     await writeFile(FILE, payload, 'utf8')
     return
   } catch {
-    await writeFile(TMP, payload, 'utf8')
+    try {
+      await writeFile(TMP, payload, 'utf8')
+    } catch (error) {
+      console.error(error)
+      throw new PersistError()
+    }
   }
 }
 
 async function load(): Promise<StoreData> {
   if (cache) return cache
-  if (redisEnv()) {
-    const got = await redisCommand(['GET', REDIS_KEY])
-    if (got?.result) {
-      cache = JSON.parse(got.result) as StoreData
-      return cache
+  try {
+    if (redisEnv()) {
+      const got = await redisCommand(['GET', REDIS_KEY])
+      if (got?.result) {
+        cache = JSON.parse(got.result) as StoreData
+        return cache
+      }
+    } else if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const blob = await loadBlob()
+      if (blob) {
+        cache = blob
+        return cache
+      }
+    } else {
+      const file = await readFileStore()
+      if (file) {
+        cache = file
+        return cache
+      }
     }
-  } else if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await loadBlob()
-    if (blob) {
-      cache = blob
-      return cache
-    }
-  } else {
-    const file = await readFileStore()
-    if (file) {
-      cache = file
-      return cache
-    }
+  } catch (error) {
+    console.error(error)
+    throw new PersistError('Le stockage des demandes est indisponible. Réessayez dans un instant.')
   }
   cache = emptyStore()
   return cache
 }
 
 async function persist(data: StoreData) {
+  try {
+    if (redisEnv()) {
+      await redisCommand(['SET', REDIS_KEY, JSON.stringify(data)])
+    } else if (process.env.BLOB_READ_WRITE_TOKEN) {
+      await saveBlob(data)
+    } else {
+      await writeFileStore(data)
+    }
+  } catch (error) {
+    if (!(error instanceof PersistError)) console.error(error)
+    throw error instanceof PersistError ? error : new PersistError()
+  }
   cache = data
-  if (redisEnv()) {
-    await redisCommand(['SET', REDIS_KEY, JSON.stringify(data)])
-    return
-  }
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    await saveBlob(data)
-    return
-  }
-  await writeFileStore(data)
 }
 
 export function withStore<T>(fn: (data: StoreData) => Promise<T> | T): Promise<T> {
@@ -154,9 +174,15 @@ export function withStore<T>(fn: (data: StoreData) => Promise<T> | T): Promise<T
 export async function updateStore<T>(fn: (data: StoreData) => Promise<T> | T): Promise<T> {
   return locked(async () => {
     const data = await load()
-    const result = await fn(data)
-    await persist(data)
-    return result
+    const before = clone(data)
+    try {
+      const result = await fn(data)
+      await persist(data)
+      return result
+    } catch (error) {
+      cache = before
+      throw error
+    }
   })
 }
 

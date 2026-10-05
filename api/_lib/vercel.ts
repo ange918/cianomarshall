@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { dispatch, type DispatchReq, type DispatchRes } from './dispatch.js'
+import { PersistError } from './store.js'
 
 function parseBody(body: unknown) {
   if (typeof body !== 'string') return body
@@ -43,6 +44,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     send(res, result)
   } catch (error) {
     console.error(error)
+    if (error instanceof PersistError) {
+      res.status(503).json({ error: error.message })
+      return
+    }
     res.status(500).json({ error: 'Erreur interne du serveur.' })
   }
 }
