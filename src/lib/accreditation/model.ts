@@ -485,6 +485,79 @@ export function demandeHref(item: { id?: string; reference?: string }) {
   return key ? `/admin/demandes/${encodeURIComponent(key)}` : '/admin/demandes'
 }
 
+/** Identifiant de route : id, référence, casse, espaces et encodage URL. */
+export function demandeRouteKey(value: unknown) {
+  const raw = String(value ?? '').trim()
+  if (!raw) return ''
+  try {
+    return decodeURIComponent(raw).trim().toLowerCase()
+  } catch {
+    return raw.toLowerCase()
+  }
+}
+
+export function demandeKeyMatches(item: { id?: string; reference?: string } | null | undefined, key: unknown) {
+  const route = demandeRouteKey(key)
+  if (!item || !route) return false
+  return demandeRouteKey(item.id) === route || demandeRouteKey(item.reference) === route
+}
+
+export function findDemande<T extends { id?: string; reference?: string }>(items: readonly T[], key: unknown) {
+  return items.find((item) => demandeKeyMatches(item, key)) ?? null
+}
+
+const FORM_ANSWER_KEYS = [
+  'fullName',
+  'mediaName',
+  'role',
+  'phone',
+  'email',
+  'cityCountry',
+  'mediaType',
+  'mediaTypeOther',
+  'mediaLink',
+  'socialLinks',
+  'coverageTypes',
+  'coverageProject',
+  'interviews',
+  'interviewPeople',
+  'teamSize',
+  'teamMembers',
+  'gear',
+  'acceptAccuracy',
+  'acceptData',
+] as const satisfies readonly (keyof FormValues)[]
+
+function hasAnswer(value: unknown) {
+  if (typeof value === 'boolean') return true
+  if (Array.isArray(value)) return value.some((entry) => String(entry ?? '').trim().length > 0)
+  return String(value ?? '').trim().length > 0
+}
+
+/**
+ * Fiche affichée : la demande déjà chargée dans la liste, complétée par le
+ * détail seulement s’il vise la même référence. Un détail vide, périmé ou
+ * absent ne peut pas effacer les réponses.
+ */
+export function displayedDemande(
+  items: readonly Accreditation[],
+  routeKey: unknown,
+  detailItem: Accreditation | null | undefined,
+): Accreditation | null {
+  const listed = findDemande(items, routeKey)
+  const fresh = detailItem && demandeKeyMatches(detailItem, routeKey) ? detailItem : null
+  if (fresh && listed) {
+    const merged: Accreditation = { ...listed, ...fresh }
+    for (const key of FORM_ANSWER_KEYS) {
+      if (!hasAnswer(fresh[key]) && hasAnswer(listed[key])) {
+        Object.assign(merged, { [key]: listed[key] })
+      }
+    }
+    return merged
+  }
+  return fresh ?? listed
+}
+
 export type AnswerRow = {
   n: string
   label: string

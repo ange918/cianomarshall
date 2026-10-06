@@ -44,7 +44,7 @@ export function resolveApiPath(url: string | undefined, query: Record<string, un
   const id = queryValue(source.id) || search.get('id') || ''
   if (id) {
     const encoded = encodeURIComponent(id)
-    if (path.includes('[id]')) path = path.replace('[id]', encoded)
+    if (/\[id\]|%5Bid%5D/i.test(path)) path = path.replace(/\[id\]|%5Bid%5D/gi, encoded)
     else if (path === '/' || /^\/api\/accreditations\/?$/.test(path)) path = `/api/accreditations/${encoded}`
   }
   return { path, query: search }

@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, Mail, MessageCircle } from 'lucide-react'
 import { ApiError, api } from '../../lib/api'
 import {
   answerSections,
   demandeHref,
+  demandeKeyMatches,
+  displayedDemande,
   formatWhen,
   parseTeam,
   teamCount,
@@ -32,11 +34,6 @@ export default function FichePage({ id }: { id: string }) {
   const [mode, setMode] = useState<DecisionMode | null>(null)
   const [saving, setSaving] = useState(false)
 
-  const cached = useMemo(
-    () => items.find((row) => row.id === id || row.reference === id) ?? null,
-    [items, id],
-  )
-
   const load = async () => {
     const data = await api<Detail>(`/api/accreditations/${encodeURIComponent(id)}`)
     if (!data?.item) throw new Error('Demande introuvable.')
@@ -50,7 +47,6 @@ export default function FichePage({ id }: { id: string }) {
   useEffect(() => {
     let cancelled = false
     setError('')
-    setDetail(null)
     api<Detail>(`/api/accreditations/${encodeURIComponent(id)}`)
       .then((data) => {
         if (cancelled) return
@@ -67,23 +63,27 @@ export default function FichePage({ id }: { id: string }) {
     }
   }, [id])
 
-  const item = detail?.item ?? cached
+  const detailMatches = Boolean(detail?.item && demandeKeyMatches(detail.item, id))
+  const item = displayedDemande(items, id, detail?.item ?? null)
   const sections = item ? answerSections(item) : []
   const history = item && Array.isArray(item.history) ? item.history : []
-  const team = detail?.team ?? (item ? parseTeam(item.teamMembers) : [])
-  const controls = detail?.controls ?? {
-    engagements: Boolean(item?.acceptAccuracy && item?.acceptData),
-    linkOk: null as boolean | null,
-    duplicateNames: [] as string[],
-  }
+  const team = detailMatches && detail ? detail.team : item ? parseTeam(item.teamMembers) : []
+  const controls =
+    detailMatches && detail
+      ? detail.controls
+      : {
+          engagements: Boolean(item?.acceptAccuracy && item?.acceptData),
+          linkOk: null as boolean | null,
+          duplicateNames: [] as string[],
+        }
 
   useEffect(() => {
-    if (!item || detail) return
+    if (!item || detailMatches) return
     const key = item.id || item.reference
     if (notesFor === key) return
     setNotes(item.internalNotes || '')
     setNotesFor(key)
-  }, [item, detail, notesFor])
+  }, [item, detailMatches, notesFor])
   const contactUrl = item ? contactWhatsAppUrl(item) : null
   const same = item ? items.filter((row) => row.status === item.status) : []
   const index = item ? same.findIndex((row) => row.id === item.id) : -1

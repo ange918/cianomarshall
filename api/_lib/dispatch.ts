@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import {
   approveMessage,
   duplicateNames,
+  findDemande,
   normalizeForm,
   parseTeam,
   REFUSAL_REASONS,
@@ -265,12 +266,12 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
 
     if (method === 'GET') {
       const data = await withStore((store) => snapshot(store))
-      const found = data.items.find((it) => it.id === idOrRef || it.reference === idOrRef)
+      const found = findDemande(data.items, idOrRef)
       if (!found) return json(404, { error: 'Demande introuvable.' })
       let viewed = found
       try {
         const saved = await updateStore((store) => {
-          const current = store.items.find((it) => it.id === found.id || it.reference === found.reference)
+          const current = findDemande(store.items, found.id)
           if (!current) return null
           if (!Array.isArray(current.history)) current.history = []
           const lastOpen = [...current.history].reverse().find((entry) => String(entry?.action || '').startsWith('Ouverte'))
@@ -307,7 +308,7 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
       const body = asRecord(req.body)
       const action = String(body.action || '')
       const updated = await updateStore((data) => {
-        const item = data.items.find((it) => it.id === idOrRef || it.reference === idOrRef)
+        const item = findDemande(data.items, idOrRef)
         if (!item) return { error: 'Demande introuvable.', status: 404 as const }
         const now = new Date().toISOString()
         const actor = session!.name || adminDisplayName()
