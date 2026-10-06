@@ -1,6 +1,7 @@
 import { ArrowUpRight, Download } from 'lucide-react'
 import {
   computeStats,
+  demandeHref,
   formatWhen,
   mediaTypeLabel,
   teamCount,
@@ -134,7 +135,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : null}
                 {items.slice(0, 6).map((item) => (
-                  <tr key={item.id} onClick={() => navigate(`/admin/demandes/${item.id}`)}>
+                  <tr key={item.id || item.reference} onClick={() => navigate(demandeHref(item))}>
                     <td>
                       <div className="who">
                         <span className={`avatar${item.status === 'nouvelle' ? '' : ' avatar--dim'}`}>

@@ -18,6 +18,7 @@ import { api } from '../../lib/api'
 import { navigate, usePathname, useSearch } from '../../lib/router'
 import {
   STATUS_LABEL,
+  demandeHref,
   type Accreditation,
   type Status,
 } from '../../lib/accreditation/model'
@@ -246,7 +247,7 @@ export function Shell({
                     type="button"
                     onClick={() => {
                       setBell(false)
-                      navigate(`/admin/demandes/${item.id}`)
+                      navigate(demandeHref(item))
                     }}
                   >
                     {item.fullName}

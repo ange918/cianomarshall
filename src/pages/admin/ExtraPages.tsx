@@ -5,6 +5,7 @@ import { api } from '../../lib/api'
 import {
   REFUSAL_REASONS,
   approveMessage,
+  demandeHref,
   formatWhen,
   mediaTypeLabel,
   parseTeam,
@@ -43,7 +44,7 @@ export function PeoplePage() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={`${row.item.id}-${row.member.name}`} onClick={() => navigate(`/admin/demandes/${row.item.id}`)}>
+              <tr key={`${row.item.id}-${row.member.name}`} onClick={() => navigate(demandeHref(row.item))}>
                 <td className="who-media">{row.member.name}</td>
                 <td>{row.member.role || '—'}</td>
                 <td>

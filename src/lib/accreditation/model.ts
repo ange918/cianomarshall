@@ -208,7 +208,7 @@ export function mediaTypeShort(label: string) {
 }
 
 export function parseTeam(text: string): TeamMember[] {
-  return text
+  return String(text ?? '')
     .split(/\n/)
     .map((line) => line.trim())
     .filter(Boolean)
@@ -478,6 +478,159 @@ export function duplicateNames(item: Accreditation, all: Accreditation[]) {
     }
   }
   return [...hits]
+}
+
+export function demandeHref(item: { id?: string; reference?: string }) {
+  const key = String(item.id || item.reference || '').trim()
+  return key ? `/admin/demandes/${encodeURIComponent(key)}` : '/admin/demandes'
+}
+
+export type AnswerRow = {
+  n: string
+  label: string
+  value: string
+  href?: string
+  chips?: string[]
+}
+
+export type AnswerSection = {
+  id: string
+  title: string
+  rows: AnswerRow[]
+  engage?: boolean
+}
+
+function filled(value: unknown) {
+  return String(value ?? '').trim()
+}
+
+function asList(value: unknown) {
+  if (Array.isArray(value)) return value.map((item) => String(item ?? '').trim()).filter(Boolean)
+  const text = filled(value)
+  return text ? [text] : []
+}
+
+/** Demande envoyée avec l’ancien formulaire (18 questions). */
+export function isLegacyApplication(item: Partial<FormValues>) {
+  return Boolean(filled(item.mediaLink) || filled(item.coverageProject) || filled(item.interviews) || asList(item.gear).length)
+}
+
+export function answerSections(item: Partial<FormValues>): AnswerSection[] {
+  const legacy = isLegacyApplication(item)
+  const link = filled(item.mediaLink)
+  const coverage = asList(item.coverageTypes)
+  const people = asList(item.interviewPeople)
+  const gear = asList(item.gear)
+  const members = parseTeam(String(item.teamMembers ?? ''))
+  const teamText = members.length
+    ? members.map((member) => (member.role ? `${member.name} — ${member.role}` : member.name)).join('\n')
+    : filled(item.teamMembers)
+  const count = teamCount({
+    teamSize: filled(item.teamSize),
+    teamMembers: String(item.teamMembers ?? ''),
+  })
+  const type = mediaTypeLabel({
+    mediaType: filled(item.mediaType),
+    mediaTypeOther: filled(item.mediaTypeOther),
+  })
+  const identification: AnswerRow[] = [
+    { n: '1', label: 'Nom et prénom', value: filled(item.fullName) },
+    { n: '2', label: 'Média / structure', value: filled(item.mediaName) },
+    { n: '3', label: 'Fonction', value: filled(item.role) },
+    { n: '4', label: 'WhatsApp / téléphone', value: filled(item.phone) },
+    { n: '5', label: 'Adresse e-mail', value: filled(item.email) },
+    { n: '6', label: 'Ville / Pays', value: filled(item.cityCountry) },
+  ]
+  const accept = (ok: unknown) => (ok ? 'J’accepte' : 'Non accepté')
+
+  if (legacy) {
+    return [
+      { id: '01', title: 'Identification', rows: identification },
+      {
+        id: '02',
+        title: 'Profil média',
+        rows: [
+          { n: '7', label: 'Type de média', value: type },
+          {
+            n: '8',
+            label: 'Lien média / site / page pro',
+            value: link,
+            href: link ? (/^https?:\/\//i.test(link) ? link : `https://${link}`) : undefined,
+          },
+          { n: '9', label: 'Réseaux sociaux pro', value: filled(item.socialLinks) },
+        ],
+      },
+      {
+        id: '03',
+        title: 'Couverture',
+        rows: [
+          { n: '10', label: 'Type(s) de couverture', value: coverage.join(', '), chips: coverage },
+          { n: '11', label: 'Projet de couverture', value: filled(item.coverageProject) },
+          { n: '12', label: 'Interviews pendant l’événement', value: filled(item.interviews) },
+          { n: '13', label: 'Types de personnes à interviewer', value: people.join(', '), chips: people },
+        ],
+      },
+      {
+        id: '04',
+        title: 'Équipe',
+        rows: [
+          { n: '14', label: 'Personnes à accréditer', value: count ? String(count) : '' },
+          { n: '15', label: 'Noms et fonctions', value: teamText },
+        ],
+      },
+      {
+        id: '05',
+        title: 'Matériel',
+        rows: [{ n: '16', label: 'Matériel', value: gear.join(', '), chips: gear }],
+      },
+      {
+        id: '06',
+        title: 'Engagement',
+        engage: true,
+        rows: [
+          { n: '17', label: 'Exactitude des informations', value: accept(item.acceptAccuracy) },
+          { n: '18', label: 'Traitement des informations', value: accept(item.acceptData) },
+        ],
+      },
+    ]
+  }
+
+  return [
+    { id: '01', title: 'Identification', rows: identification },
+    {
+      id: '02',
+      title: 'Profil média',
+      rows: [
+        { n: '7', label: 'Type de média', value: type },
+        { n: '8', label: 'Réseaux sociaux pro', value: filled(item.socialLinks) },
+      ],
+    },
+    {
+      id: '03',
+      title: 'Couverture',
+      rows: [
+        { n: '9', label: 'Type(s) de couverture', value: coverage.join(', '), chips: coverage },
+        { n: '10', label: 'Types de personnes à interviewer', value: people.join(', '), chips: people },
+      ],
+    },
+    {
+      id: '04',
+      title: 'Équipe',
+      rows: [
+        { n: '11', label: 'Personnes à accréditer', value: count ? String(count) : '' },
+        { n: '12', label: 'Noms et fonctions', value: teamText },
+      ],
+    },
+    {
+      id: '05',
+      title: 'Engagement',
+      engage: true,
+      rows: [
+        { n: '13', label: 'Exactitude des informations', value: accept(item.acceptAccuracy) },
+        { n: '14', label: 'Traitement des informations', value: accept(item.acceptData) },
+      ],
+    },
+  ]
 }
 
 export function toCsv(items: Accreditation[]) {
