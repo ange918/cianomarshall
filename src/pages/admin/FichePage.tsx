@@ -2,10 +2,15 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, Mail, MessageCircle } from 'lucide-react'
 import { ApiError, api } from '../../lib/api'
 import {
+  answerSections,
+  demandeHref,
+  demandeKeyMatches,
+  displayedDemande,
   formatWhen,
-  mediaTypeLabel,
+  parseTeam,
   teamCount,
   type Accreditation,
+  type AnswerRow,
   type HistoryEntry,
   type TeamMember,
 } from '../../lib/accreditation/model'
@@ -25,30 +30,60 @@ export default function FichePage({ id }: { id: string }) {
   const [detail, setDetail] = useState<Detail | null>(null)
   const [error, setError] = useState('')
   const [notes, setNotes] = useState('')
+  const [notesFor, setNotesFor] = useState('')
   const [mode, setMode] = useState<DecisionMode | null>(null)
   const [saving, setSaving] = useState(false)
 
   const load = async () => {
-    const data = await api<Detail>(`/api/accreditations/${id}`)
+    const data = await api<Detail>(`/api/accreditations/${encodeURIComponent(id)}`)
+    if (!data?.item) throw new Error('Demande introuvable.')
     setDetail(data)
-    setNotes(data.item.internalNotes)
+    setNotes(data.item.internalNotes || '')
+    setNotesFor(data.item.id || data.item.reference)
+    setError('')
+    return data
   }
 
   useEffect(() => {
     let cancelled = false
     setError('')
-    load()
+    api<Detail>(`/api/accreditations/${encodeURIComponent(id)}`)
+      .then((data) => {
+        if (cancelled) return
+        if (!data?.item) throw new Error('Demande introuvable.')
+        setDetail(data)
+        setNotes(data.item.internalNotes || '')
+        setNotesFor(data.item.id || data.item.reference)
+      })
       .catch((err: unknown) => {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Introuvable')
       })
     return () => {
       cancelled = true
     }
-    // rechargement explicite après décision
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
-  const item = detail?.item
+  const detailMatches = Boolean(detail?.item && demandeKeyMatches(detail.item, id))
+  const item = displayedDemande(items, id, detail?.item ?? null)
+  const sections = item ? answerSections(item) : []
+  const history = item && Array.isArray(item.history) ? item.history : []
+  const team = detailMatches && detail ? detail.team : item ? parseTeam(item.teamMembers) : []
+  const controls =
+    detailMatches && detail
+      ? detail.controls
+      : {
+          engagements: Boolean(item?.acceptAccuracy && item?.acceptData),
+          linkOk: null as boolean | null,
+          duplicateNames: [] as string[],
+        }
+
+  useEffect(() => {
+    if (!item || detailMatches) return
+    const key = item.id || item.reference
+    if (notesFor === key) return
+    setNotes(item.internalNotes || '')
+    setNotesFor(key)
+  }, [item, detailMatches, notesFor])
   const contactUrl = item ? contactWhatsAppUrl(item) : null
   const same = item ? items.filter((row) => row.status === item.status) : []
   const index = item ? same.findIndex((row) => row.id === item.id) : -1
@@ -59,7 +94,7 @@ export default function FichePage({ id }: { id: string }) {
     if (!item) return
     setSaving(true)
     try {
-      await api(`/api/accreditations/${item.id}`, {
+      await api(`/api/accreditations/${encodeURIComponent(item.id || item.reference)}`, {
         method: 'PATCH',
         body: JSON.stringify({ action: 'notes', internalNotes: notes }),
       })
@@ -80,23 +115,26 @@ export default function FichePage({ id }: { id: string }) {
         </button>
         {item ? (
           <div className="fiche-nav">
-            <button type="button" disabled={!prev} aria-label="Précédente" onClick={() => prev && navigate(`/admin/demandes/${prev.id}`)}>
+            <button type="button" disabled={!prev} aria-label="Précédente" onClick={() => prev && navigate(demandeHref(prev))}>
               <ArrowLeft size={16} />
             </button>
             <span>
               {index + 1} / {same.length} {item.status === 'nouvelle' ? 'nouvelles' : 'demandes'}
             </span>
-            <button type="button" disabled={!next} aria-label="Suivante" onClick={() => next && navigate(`/admin/demandes/${next.id}`)}>
+            <button type="button" disabled={!next} aria-label="Suivante" onClick={() => next && navigate(demandeHref(next))}>
               <ArrowRight size={16} />
             </button>
           </div>
         ) : null}
       </div>
 
-      {error ? <p className="acc-alert">{error}</p> : null}
+      {error && !item ? <p className="acc-alert">{error}</p> : null}
+      {error && item ? (
+        <p className="note">Les réponses du formulaire sont affichées. Actualisation de la fiche impossible : {error}</p>
+      ) : null}
       {!item && !error ? <p className="note">Chargement de la fiche…</p> : null}
 
-      {item && detail ? (
+      {item ? (
         <div className="detail">
           <div>
             <article className="dcard">
@@ -126,87 +164,30 @@ export default function FichePage({ id }: { id: string }) {
               </div>
             </article>
 
-            <Card n="01" title="Identification">
-              <dl className="kv">
-                <Row k="1. Nom et prénom" v={item.fullName} />
-                <Row k="2. Média / structure" v={item.mediaName} />
-                <Row k="3. Fonction" v={item.role} />
-                <Row k="4. WhatsApp / téléphone" v={item.phone} />
-                <Row k="5. Adresse e-mail" v={item.email} />
-                <Row k="6. Ville / Pays" v={item.cityCountry} />
-              </dl>
-            </Card>
-            <Card n="02" title="Profil média">
-              <dl className="kv">
-                <Row k="7. Type de média" v={mediaTypeLabel(item)} />
-                <div className="full">
-                  <span>8. Réseaux sociaux pro</span>
-                  <b className="pre">{item.socialLinks || '—'}</b>
-                </div>
-              </dl>
-            </Card>
-            <Card n="03" title="Couverture">
-              <dl className="kv">
-                <div className="full">
-                  <span>9. Type(s) de couverture</span>
-                  <div className="chips">
-                    {(item.coverageTypes ?? []).length ? item.coverageTypes.map((type) => <span key={type}>{type}</span>) : <b>—</b>}
-                  </div>
-                </div>
-                <div className="full">
-                  <span>10. Types de personnes à interviewer</span>
-                  <div className="chips">
-                    {(item.interviewPeople ?? []).length ? item.interviewPeople.map((type) => <span key={type}>{type}</span>) : <b>—</b>}
-                  </div>
-                </div>
-              </dl>
-            </Card>
-            <Card n="04" title="Équipe">
-              <dl className="kv">
-                <Row k="11. Personnes à accréditer" v={String(teamCount(item) || '—')} />
-                <Row k="Badges à émettre" v={`${teamCount(item) || 0} badge${teamCount(item) > 1 ? 's' : ''} nominatif${teamCount(item) > 1 ? 's' : ''}`} />
-                <div className="full">
-                  <span>12. Noms et fonctions</span>
-                  <ol className="team-list">
-                    {detail.team.map((member) => (
-                      <li key={member.name}>
-                        {member.name}
-                        {member.role ? ` — ${member.role}` : ''}
-                      </li>
+            <p className="note answers-lead">
+              Réponses du formulaire · {sections.reduce((sum, section) => sum + section.rows.length, 0)} questions
+              {team.length ? ` · ${teamCount(item)} badge${teamCount(item) > 1 ? 's' : ''}` : ''}
+            </p>
+            {sections.map((section) => (
+              <Card key={section.id} n={section.id} title={section.title}>
+                {section.engage ? (
+                  section.rows.map((row) => (
+                    <p key={row.n} className={row.value === 'J’accepte' ? 'ok-line' : 'ko-line'}>
+                      <Check size={14} /> {row.n}. {row.label} — {row.value}
+                    </p>
+                  ))
+                ) : (
+                  <dl className="kv">
+                    {section.rows.map((row) => (
+                      <Answer key={row.n} row={row} />
                     ))}
-                    {!detail.team.length ? <li>—</li> : null}
-                  </ol>
-                </div>
-              </dl>
-            </Card>
-            <Card n="05" title="Engagement">
-              <p className={item.acceptAccuracy ? 'ok-line' : 'ko-line'}>
-                <Check size={14} /> 13. Exactitude {item.acceptAccuracy ? '— J’accepte' : '— non accepté'}
-              </p>
-              <p className={item.acceptData ? 'ok-line' : 'ko-line'}>
-                <Check size={14} /> 14. Traitement des informations {item.acceptData ? '— J’accepte' : '— non accepté'}
-              </p>
-            </Card>
-            {legacyAnswers(item).length ? (
-              <Card title="Ancien formulaire">
-                <dl className="kv">
-                  {legacyAnswers(item).map((row) =>
-                    row.href ? (
-                      <div className="full" key={row.k}>
-                        <span>{row.k}</span>
-                        <b>
-                          <a href={row.href} target="_blank" rel="noreferrer">
-                            {row.v}
-                          </a>
-                        </b>
-                      </div>
-                    ) : (
-                      <Row key={row.k} k={row.k} v={row.v} />
-                    ),
-                  )}
-                </dl>
+                    {section.id === '04' ? (
+                      <Row k="Badges à émettre" v={`${teamCount(item) || 0} badge${teamCount(item) > 1 ? 's' : ''} nominatif${teamCount(item) > 1 ? 's' : ''}`} />
+                    ) : null}
+                  </dl>
+                )}
               </Card>
-            ) : null}
+            ))}
           </div>
 
           <aside className="decision">
@@ -265,16 +246,16 @@ export default function FichePage({ id }: { id: string }) {
               </div>
               <ul className="controls">
                 {item.mediaLink?.trim() ? (
-                  <li className={detail.controls.linkOk ? 'ok' : 'warn'}>
-                    {detail.controls.linkOk ? 'Lien média accessible' : detail.controls.linkOk === false ? 'Lien média inaccessible' : 'Lien média non vérifié'}
+                  <li className={controls.linkOk ? 'ok' : 'warn'}>
+                    {controls.linkOk ? 'Lien média accessible' : controls.linkOk === false ? 'Lien média inaccessible' : 'Lien média non vérifié'}
                   </li>
                 ) : null}
-                <li className={detail.controls.engagements ? 'ok' : 'warn'}>
-                  {detail.controls.engagements ? 'Engagements 13 & 14 acceptés' : 'Engagements incomplets'}
+                <li className={controls.engagements ? 'ok' : 'warn'}>
+                  {controls.engagements ? 'Engagements acceptés' : 'Engagements incomplets'}
                 </li>
-                <li className={detail.controls.duplicateNames.length ? 'warn' : 'ok'}>
-                  {detail.controls.duplicateNames.length
-                    ? `${detail.controls.duplicateNames.length} nom présent dans une autre demande (${detail.controls.duplicateNames.join(', ')})`
+                <li className={controls.duplicateNames.length ? 'warn' : 'ok'}>
+                  {controls.duplicateNames.length
+                    ? `${controls.duplicateNames.length} nom présent dans une autre demande (${controls.duplicateNames.join(', ')})`
                     : 'Aucun nom en doublon'}
                 </li>
               </ul>
@@ -284,9 +265,9 @@ export default function FichePage({ id }: { id: string }) {
                 <h3>Historique</h3>
               </div>
               <ul className="timeline">
-                {item.history.map((entry: HistoryEntry, index) => (
+                {history.map((entry: HistoryEntry, index) => (
                   <li key={`${entry.at}-${index}`}>
-                    <i className={index === item.history.length - 1 ? 'dim' : ''} />
+                    <i className={index === history.length - 1 ? 'dim' : ''} />
                     <div>
                       <b>{entry.action}</b>
                       <small>
@@ -333,23 +314,28 @@ function Card({ n, title, children }: { n?: string; title: string; children: Rea
   )
 }
 
-function legacyAnswers(item: Accreditation) {
-  const rows: { k: string; v: string; href?: string }[] = []
-  const link = item.mediaLink?.trim()
-  if (link) {
-    rows.push({
-      k: 'Lien média / site / page pro',
-      v: link,
-      href: /^https?:\/\//i.test(link) ? link : `https://${link}`,
-    })
-  }
-  const project = item.coverageProject?.trim()
-  if (project) rows.push({ k: 'Projet de couverture', v: project })
-  const interviews = item.interviews?.trim()
-  if (interviews) rows.push({ k: 'Interviews pendant l’événement', v: interviews })
-  const gear = item.gear ?? []
-  if (gear.length) rows.push({ k: 'Matériel', v: gear.join(', ') })
-  return rows
+function Answer({ row }: { row: AnswerRow }) {
+  const chips = row.chips
+  return (
+    <div className={chips || row.value.includes('\n') || row.href ? 'full' : undefined}>
+      <span>
+        {row.n}. {row.label}
+      </span>
+      {chips ? (
+        <div className="chips">
+          {chips.length ? chips.map((type) => <span key={type}>{type}</span>) : <span className="pre">—</span>}
+        </div>
+      ) : row.href ? (
+        <b>
+          <a href={row.href} target="_blank" rel="noreferrer">
+            {row.value}
+          </a>
+        </b>
+      ) : (
+        <b className="pre">{row.value || '—'}</b>
+      )}
+    </div>
+  )
 }
 
 function Row({ k, v }: { k: string; v: string }) {
@@ -362,7 +348,7 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 function initials(name: string) {
-  const parts = name.replace(/^@/, '').split(/\s+/).filter(Boolean)
+  const parts = String(name || '').replace(/^@/, '').split(/\s+/).filter(Boolean)
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase()
 }
 

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import {
   approveMessage,
   duplicateNames,
+  findDemande,
   normalizeForm,
   parseTeam,
   REFUSAL_REASONS,
@@ -56,17 +57,29 @@ function isStatus(v: string): v is Status {
 }
 
 async function probeLink(url: string): Promise<boolean | null> {
-  const raw = url.trim()
+  const raw = String(url || '').trim()
   if (!raw) return null
   const href = raw.includes('://') ? raw : `https://${raw}`
+  const ctrl = new AbortController()
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const pending = fetch(href, { method: 'GET', redirect: 'follow', signal: ctrl.signal }).then(
+    (res) => res.status < 400,
+    () => false,
+  )
   try {
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), 1500)
-    const res = await fetch(href, { method: 'GET', redirect: 'follow', signal: ctrl.signal })
-    clearTimeout(timer)
-    return res.status < 400
-  } catch {
-    return false
+    const result = await Promise.race([
+      pending,
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => {
+          ctrl.abort()
+          resolve(null)
+        }, 1200)
+      }),
+    ])
+    return result
+  } finally {
+    if (timer) clearTimeout(timer)
+    ctrl.abort()
   }
 }
 
@@ -252,41 +265,50 @@ export async function dispatch(req: DispatchReq): Promise<DispatchRes> {
     }
 
     if (method === 'GET') {
-      const result = await updateStore(async (data) => {
-        const item = data.items.find((it) => it.id === idOrRef || it.reference === idOrRef)
-        if (!item) return null
-        const lastOpen = [...item.history].reverse().find((h) => h.action.startsWith('Ouverte'))
-        const recent = lastOpen && Date.now() - new Date(lastOpen.at).getTime() < 60 * 60 * 1000
-        if (!recent) {
-          const entry: HistoryEntry = {
-            at: new Date().toISOString(),
-            actor: session!.name || adminDisplayName(),
-            action: 'Ouverte',
-            detail: 'Consultation de la fiche',
+      const data = await withStore((store) => snapshot(store))
+      const found = findDemande(data.items, idOrRef)
+      if (!found) return json(404, { error: 'Demande introuvable.' })
+      let viewed = found
+      try {
+        const saved = await updateStore((store) => {
+          const current = findDemande(store.items, found.id)
+          if (!current) return null
+          if (!Array.isArray(current.history)) current.history = []
+          const lastOpen = [...current.history].reverse().find((entry) => String(entry?.action || '').startsWith('Ouverte'))
+          const recent = lastOpen && Date.now() - new Date(lastOpen.at).getTime() < 60 * 60 * 1000
+          if (!recent) {
+            const entry: HistoryEntry = {
+              at: new Date().toISOString(),
+              actor: session!.name || adminDisplayName(),
+              action: 'Ouverte',
+              detail: 'Consultation de la fiche',
+            }
+            current.history.push(entry)
+            current.updatedAt = entry.at
           }
-          item.history.push(entry)
-          item.updatedAt = entry.at
-        }
-        const linkOk = await probeLink(item.mediaLink || '')
-        return {
-          item: snapshot({ seq: data.seq, pressCapacity: data.pressCapacity, items: [item] }).items[0],
-          controls: {
-            engagements: item.acceptAccuracy && item.acceptData,
-            linkOk,
-            duplicateNames: duplicateNames(item, data.items),
-          },
-          team: parseTeam(item.teamMembers),
-        }
+          return snapshot(store).items.find((it) => it.id === current.id) || current
+        })
+        if (saved) viewed = saved
+      } catch (error) {
+        console.error(error)
+      }
+      const linkOk = await probeLink(String(viewed.mediaLink || ''))
+      return json(200, {
+        item: viewed,
+        controls: {
+          engagements: Boolean(viewed.acceptAccuracy && viewed.acceptData),
+          linkOk,
+          duplicateNames: duplicateNames(viewed, data.items),
+        },
+        team: parseTeam(viewed.teamMembers),
       })
-      if (!result) return json(404, { error: 'Demande introuvable.' })
-      return json(200, result)
     }
 
     if (method === 'PATCH') {
       const body = asRecord(req.body)
       const action = String(body.action || '')
       const updated = await updateStore((data) => {
-        const item = data.items.find((it) => it.id === idOrRef || it.reference === idOrRef)
+        const item = findDemande(data.items, idOrRef)
         if (!item) return { error: 'Demande introuvable.', status: 404 as const }
         const now = new Date().toISOString()
         const actor = session!.name || adminDisplayName()

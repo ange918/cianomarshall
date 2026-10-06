@@ -4,6 +4,7 @@ import {
   MEDIA_TYPES,
   STATUS_LABEL,
   STATUS_ORDER,
+  demandeHref,
   formatWhen,
   mediaTypeLabel,
   teamCount,
@@ -178,8 +179,8 @@ export default function ListPage({ initialQuery = '', initialStatus = 'toutes' }
           </thead>
           <tbody>
             {slice.map((item) => (
-              <tr key={item.id} className={selected.includes(item.id) ? 'sel' : ''}>
-                <td>
+              <tr key={item.id || item.reference} className={selected.includes(item.id) ? 'sel' : ''} onClick={() => navigate(demandeHref(item))}>
+                <td onClick={(event) => event.stopPropagation()}>
                   <button
                     type="button"
                     className={`cb${selected.includes(item.id) ? ' on' : ''}`}
@@ -208,11 +209,20 @@ export default function ListPage({ initialQuery = '', initialStatus = 'toutes' }
                 <td>
                   <Badge status={item.status} />
                 </td>
-                <td>
+                <td onClick={(event) => event.stopPropagation()}>
                   <div className="row-actions">
-                    <button type="button" className="ibtn" aria-label="Ouvrir" onClick={() => navigate(`/admin/demandes/${item.id}`)}>
+                    <a
+                      className="ibtn ibtn--view"
+                      href={demandeHref(item)}
+                      aria-label={`Voir la demande de ${item.fullName}`}
+                      onClick={(event) => {
+                        event.preventDefault()
+                        navigate(demandeHref(item))
+                      }}
+                    >
                       <Eye size={15} />
-                    </button>
+                      <span>Voir</span>
+                    </a>
                     {(() => {
                       const contactUrl = contactWhatsAppUrl(item)
                       if (!contactUrl) return null
