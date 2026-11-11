@@ -2,7 +2,6 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowRight, X } from 'lucide-react'
 import { DONATION_TIERS } from '../config/feexpay'
-import Logo from '../components/Logo'
 import './dons.css'
 
 // Page autonome /dons — hors navigation principale.
@@ -152,8 +151,8 @@ export default function SolidarityDonsPage() {
       </a>
       <header className="dons__bar">
         <a href="/" className="dons__brand">
-          <span className="dons__logo-disc" aria-hidden="true">
-            <Logo />
+          <span className="dons__logo-plate">
+            <img src="/dons/logo-afa.svg" alt="" width={64} height={68} />
           </span>
           <span className="dons__word" aria-hidden="true">
             AFA

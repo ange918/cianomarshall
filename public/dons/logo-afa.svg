@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 214" role="img" aria-label="Africa Fashion Awards">
+  <defs>
+    <linearGradient id="afa-mark" x1="18" y1="8" x2="168" y2="206" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f5d67b"/>
+      <stop offset="42%" stop-color="#e7c65a"/>
+      <stop offset="68%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#a67c14"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#afa-mark)" fill-rule="evenodd" d="M100,10 L121.16,66.88 L181.79,69.42 L134.24,107.12 L150.55,165.58 L100,132 L49.45,165.58 L65.76,107.12 L18.21,69.42 L78.84,66.88 Z M100,50 L109.4,77.06 L138.04,77.64 L115.22,94.94 L123.51,122.36 L100,106 L76.49,122.36 L84.78,94.94 L61.96,77.64 L90.6,77.06 Z"/>
+  <path fill="url(#afa-mark)" d="M58,156 L142,156 L156,198 L44,198 Z"/>
+</svg>

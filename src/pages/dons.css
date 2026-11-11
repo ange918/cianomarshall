@@ -70,21 +70,22 @@ html:has(.dons) body {
   position: relative;
 }
 
-.dons__logo-disc {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--gold);
+.dons__logo-plate {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
   background: var(--black);
+  border: 1px solid var(--gold-line);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
 }
 
-.dons__logo-disc svg {
-  width: 22px;
+.dons__logo-plate img {
+  width: 38px;
   height: auto;
+  max-width: none;
 }
 
 .dons__word {
@@ -279,13 +280,14 @@ html:has(.dons) body {
     padding-top: 0.15rem;
   }
 
-  .dons__logo-disc {
-    width: 36px;
-    height: 36px;
+  .dons__logo-plate {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
   }
 
-  .dons__logo-disc svg {
-    width: 18px;
+  .dons__logo-plate img {
+    width: 28px;
   }
 
   .dons__word {
