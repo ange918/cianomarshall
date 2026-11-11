@@ -5,29 +5,55 @@ import { DONATION_TIERS } from '../config/feexpay'
 import './dons.css'
 
 // Page autonome /dons — hors navigation principale.
-// Photos : remplacer public/dons/photo-1.jpg, photo-2.jpg, photo-3.jpg
-// (mêmes noms, recadrage 3:4). Mettre à jour le texte `alt` en même temps.
-// Paiement : montants et liens repris tels quels de src/config/feexpay.ts
-// (FeexLink). Aucun lien FedaPay n'existe dans le dépôt.
+// Photos : public/dons/photo-1.jpg … photo-7.jpg.
+// L’éventail en montre 5 (photo-3 et photo-4 restent pour un échange).
+// Paiement : liens repris de src/config/feexpay.ts.
 
 const CARDS = [
   {
-    src: '/dons/photo-1.jpg',
-    alt: 'Image de remplacement : blocs graphiques or et ivoire. Photo définitive à venir.',
+    src: '/dons/photo-2.jpg',
+    alt: 'Un enfant tend sa barquette pendant la distribution du repas.',
     caption: 'Être sourd ou muet ne devrait pas être un handicap',
     tone: 'gold',
+    focus: '32% 18%',
+    wide: false,
+    edge: true,
   },
   {
-    src: '/dons/photo-2.jpg',
-    alt: 'Image de remplacement : affiche graphique noir et or. Photo définitive à venir.',
+    src: '/dons/photo-1.jpg',
+    alt: 'Enfants en uniforme partageant un repas.',
     caption: 'Apprendre la langue des signes ouvre la conversation',
     tone: 'ink',
+    focus: 'center 22%',
+    wide: false,
+    edge: false,
   },
   {
-    src: '/dons/photo-3.jpg',
-    alt: 'Image de remplacement : cadre graphique évoquant un équipement. Photo définitive à venir.',
+    src: '/dons/photo-6.jpg',
+    alt: 'Photo de groupe des enfants devant l’école.',
     caption: 'Formation et équipement pour avancer avec les autres',
+    tone: 'gold',
+    focus: 'center 40%',
+    wide: true,
+    edge: false,
+  },
+  {
+    src: '/dons/photo-7.jpg',
+    alt: 'Enfants partageant un repas.',
+    caption: 'Un repas partagé, une place à la table',
     tone: 'deep',
+    focus: 'center 28%',
+    wide: false,
+    edge: false,
+  },
+  {
+    src: '/dons/photo-5.jpg',
+    alt: 'Enfants attablés ensemble, barquettes ouvertes.',
+    caption: 'Grandir ensemble, sans rester à l’écart',
+    tone: 'ink',
+    focus: 'center 38%',
+    wide: false,
+    edge: true,
   },
 ] as const
 
@@ -155,7 +181,7 @@ export default function SolidarityDonsPage() {
             <img src="/dons/logo-afa.svg" alt="" width={64} height={68} />
           </span>
           <span className="dons__word" aria-hidden="true">
-            AFA
+            Africa Fashion Awards
           </span>
           <span className="dons__sr">Africa Fashion Awards — accueil</span>
         </a>
@@ -167,18 +193,26 @@ export default function SolidarityDonsPage() {
 
       <main id="dons-contenu" className="dons__main">
         <h1 className="dons__title">
-          Soutenons les
-          <br />
-          sourds et muets
+          <span className="dons__title-line">Soutenons les</span>
+          <span className="dons__title-line dons__title-line--gold">sourds et muets</span>
         </h1>
 
         <div className="dons__row">
           {CARDS.map((card) => (
-            <figure key={card.src} className={`dons__card dons__card--${card.tone}`}>
+            <figure
+              key={card.src}
+              className={`dons__card dons__card--${card.tone}${card.wide ? ' dons__card--wide' : ''}${card.edge ? ' dons__card--edge' : ''}`}
+            >
               <div className="dons__frame">
-                <img src={card.src} alt={card.alt} width={900} height={1200} />
+                <img
+                  src={card.src}
+                  alt={card.alt}
+                  width={card.wide ? 1280 : 854}
+                  height={card.wide ? 854 : 1280}
+                  style={{ objectPosition: card.focus }}
+                />
+                <figcaption className="dons__caption">{card.caption}</figcaption>
               </div>
-              <figcaption className="dons__caption">{card.caption}</figcaption>
             </figure>
           ))}
         </div>
