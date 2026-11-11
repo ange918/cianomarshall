@@ -18,6 +18,7 @@ import PageCurtain from './components/PageCurtain'
 import AccreditationPage from './pages/AccreditationPage'
 import AccreditationConfirm from './pages/AccreditationConfirm'
 import AccreditationStatus from './pages/AccreditationStatus'
+import SolidarityDonsPage from './pages/SolidarityDonsPage'
 import AdminApp from './pages/admin/AdminApp'
 import { initCopy } from './lib/copyReveal'
 import { setLenis, smoothScrollTo } from './lib/nav'
@@ -98,5 +99,6 @@ export default function App() {
   if (path.startsWith('/accreditation/confirmation')) return <AccreditationConfirm />
   if (path.startsWith('/accreditation/statut')) return <AccreditationStatus />
   if (path.startsWith('/accreditation')) return <AccreditationPage />
+  if (path === '/dons' || path === '/dons/') return <SolidarityDonsPage />
   return <Landing />
 }
