@@ -69,16 +69,16 @@ html:has(.dons) body {
 
 .dons__bar {
   flex: none;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  justify-content: center;
   align-items: center;
   min-height: 56px;
 }
 
 .dons__brand {
-  justify-self: start;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.7rem;
   color: var(--white);
   min-height: 52px;
@@ -113,18 +113,25 @@ html:has(.dons) body {
   color: var(--white);
 }
 
+.dons__lead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.55rem, 1.4vh, 0.85rem);
+  text-align: center;
+}
+
 .dons__pill {
-  justify-self: center;
   margin: 0;
-  padding: 0.42rem 0.95rem;
+  padding: 0.55rem 1.25rem;
   border: 1px solid var(--gold);
   border-radius: 999px;
   background: transparent;
   color: var(--gold);
   font-family: var(--font);
-  font-size: 0.72rem;
+  font-size: clamp(1rem, 1.7vw, 1.28rem);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -345,15 +352,19 @@ html:has(.dons) body {
   }
 
   .dons__word {
-    font-size: 0.5rem;
-    letter-spacing: 0.14em;
-    max-width: 7.2rem;
+    font-size: 0.56rem;
+    letter-spacing: 0.12em;
+    max-width: none;
   }
 
   .dons__pill {
-    font-size: 0.62rem;
-    padding: 0.32rem 0.62rem;
-    letter-spacing: 0.06em;
+    font-size: clamp(0.92rem, 4.2vw, 1.05rem);
+    padding: 0.48rem 0.9rem;
+    letter-spacing: 0.03em;
+  }
+
+  .dons__lead {
+    gap: 0.55rem;
   }
 
   .dons__title {

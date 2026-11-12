@@ -185,17 +185,16 @@ export default function SolidarityDonsPage() {
           </span>
           <span className="dons__sr">Africa Fashion Awards — accueil</span>
         </a>
-        <p className="dons__pill" lang="en">
-          What we doing
-        </p>
-        <span className="dons__bar-end" aria-hidden="true" />
       </header>
 
       <main id="dons-contenu" className="dons__main">
+        <div className="dons__lead">
+        <p className="dons__pill">Nous pouvons le faire</p>
         <h1 className="dons__title">
           <span className="dons__title-line">Soutenons les</span>
           <span className="dons__title-line dons__title-line--gold">sourds et muets</span>
         </h1>
+        </div>
 
         <div className="dons__row">
           {CARDS.map((card) => (
